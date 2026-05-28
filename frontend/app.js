@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/api/books';
+const API_URL = 'https://projekt-77332-75545-production.up.railway.app/api/books';
 let books = [];
 let isAdmin = false;
 let currentBookId = null;
