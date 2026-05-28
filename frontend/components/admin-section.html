@@ -1,0 +1,41 @@
+<aside id="admin-section" class="add-book-section">
+    <h2 id="form-title">Dodaj nową książkę</h2>
+    <form id="add-book-form" class="book-form">
+        <input type="hidden" id="edit-book-id">
+        
+        <div class="form-group">
+            <label for="title">Tytuł książki</label>
+            <input type="text" id="title" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="author">Autor</label>
+            <input type="text" id="author" required>
+        </div>
+
+        <div class="form-group">
+            <label for="genre">Gatunek</label>
+            <select id="genre" required>
+                <option value="">Wybierz...</option>
+                <option value="Fantastyka">Fantastyka</option>
+                <option value="Kryminał">Kryminał</option>
+                <option value="Romans">Romans</option>
+                <option value="Naukowa">Naukowa</option>
+                <option value="Inne">Inne</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="cover">Link do okładki (URL)</label>
+            <input type="url" id="cover" placeholder="https://...">
+        </div>
+
+        <div class="form-group">
+            <label for="description">Opis</label>
+            <textarea id="description" rows="4" required></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-book-btn">Zapisz książkę</button>
+        <button type="button" class="btn-outline hidden" id="cancel-edit-btn">Anuluj edycję</button>
+    </form>
+</aside>

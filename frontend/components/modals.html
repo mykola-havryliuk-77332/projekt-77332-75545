@@ -1,0 +1,72 @@
+<div id="book-modal" class="modal hidden">
+    <div class="modal-content large-modal">
+        <span class="close-btn" id="close-book-modal">&times;</span>
+        <div class="modal-layout">
+            <div class="modal-cover-wrapper">
+                <img id="modal-cover" src="" alt="Okładka" class="modal-cover-img">
+                <span id="modal-genre" class="badge modal-badge">Gatunek</span>
+            </div>
+            <div class="modal-info">
+                <h2 id="modal-title">Tytuł Książki</h2>
+                <h3 id="modal-author">Autor</h3>
+                <p id="modal-description"></p>
+                
+                <div class="divider"></div>
+                
+                <div class="comments-section">
+                    <h3>Opinie i Dyskusja</h3>
+                    <div id="comments-list" class="comments-list"></div>
+                    
+                    <p id="login-prompt-comments" class="login-prompt">
+                        Zaloguj się, aby dodać opinię i ocenić książkę.
+                    </p>
+
+                    <form id="add-comment-form" class="comment-form hidden">
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2;">
+                                <input type="text" id="comment-author" placeholder="Twoje imię..." required>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <select id="comment-rating" required>
+                                    <option value="">Ocena...</option>
+                                    <option value="5">⭐⭐⭐⭐⭐</option>
+                                    <option value="4">⭐⭐⭐⭐</option>
+                                    <option value="3">⭐⭐⭐</option>
+                                    <option value="2">⭐⭐</option>
+                                    <option value="1">⭐</option>
+                                </select>
+                            </div>
+                        </div>
+                        <textarea id="comment-text" rows="2" placeholder="Napisz swoją opinię..." required></textarea>
+                        <button type="submit" class="btn-submit">Dodaj opinię</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="login-modal" class="modal hidden">
+    <div class="modal-content small-modal">
+        <span class="close-btn" id="close-login-modal">&times;</span>
+        <h2>Logowanie</h2>
+        <form id="login-form">
+            <div class="form-group"><input type="email" placeholder="Email" required></div>
+            <div class="form-group"><input type="password" placeholder="Hasło" required></div>
+            <button type="submit" class="btn-submit">Zaloguj się</button>
+        </form>
+    </div>
+</div>
+
+<div id="register-modal" class="modal hidden">
+    <div class="modal-content small-modal">
+        <span class="close-btn" id="close-register-modal">&times;</span>
+        <h2>Rejestracja</h2>
+        <form id="register-form">
+            <div class="form-group"><input type="text" placeholder="Imię" required></div>
+            <div class="form-group"><input type="email" placeholder="Email" required></div>
+            <div class="form-group"><input type="password" placeholder="Hasło" required></div>
+            <button type="submit" class="btn-submit">Utwórz konto</button>
+        </form>
+    </div>
+</div>
