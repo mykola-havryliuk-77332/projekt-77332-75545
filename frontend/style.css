@@ -24,9 +24,9 @@ body {
 }
 
 .container {
-    max-width: 100%;
-    margin: 0;
-    padding: 0 30px;
+    max-width: 1350px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
 .main-header {
@@ -198,6 +198,11 @@ button {
     margin-top: 10px;
 }
 
+.btn-large {
+    padding: 12px 20px;
+    font-size: 1.05rem;
+}
+
 .btn-submit:hover,
 .btn-primary:hover {
     background: var(--primary-hover);
@@ -236,7 +241,7 @@ button {
 
 .books-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 20px;
 }
 
@@ -316,6 +321,10 @@ button {
     transition: 0.3s;
 }
 
+.full-page-modal {
+    background: var(--bg-color);
+}
+
 .modal-content {
     background: var(--card-bg);
     padding: 30px;
@@ -333,6 +342,64 @@ button {
 .large-modal {
     width: 850px;
     max-width: 95%;
+}
+
+.auth-modal-content {
+    width: 450px;
+    max-width: 95%;
+    padding: 40px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-color);
+}
+
+.full-page-modal .close-btn {
+    top: 20px;
+    right: 25px;
+    font-size: 2rem;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-header h2 {
+    color: var(--text-main);
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.auth-header p {
+    color: var(--text-muted);
+}
+
+.auth-form .form-group {
+    margin-bottom: 20px;
+}
+
+.auth-form label {
+    font-size: 0.95rem;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.link-text {
+    color: var(--primary-color);
+    cursor: pointer;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.link-text:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
 }
 
 .close-btn {
@@ -457,16 +524,6 @@ button {
     color: var(--text-muted);
     padding: 40px;
     grid-column: 1 / -1;
-}
-
-.small-modal h2 {
-    margin-top: 10px;
-    margin-bottom: 25px;
-    color: var(--text-main);
-}
-
-.small-modal .close-btn {
-    top: 20px;
 }
 
 select {
