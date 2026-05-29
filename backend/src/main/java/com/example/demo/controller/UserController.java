@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 @CrossOrigin(origins = "*") // Дозволяє фронтенду робити запити
 public class UserController {
 
