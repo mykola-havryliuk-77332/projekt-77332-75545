@@ -38,6 +38,7 @@ async function initApp() {
     setupThemeToggle();
 }
 
+
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -208,7 +209,7 @@ function setupBooksListeners() {
                 showToast('Zaktualizowano informacje o książce.', 'success');
             } catch (err) {
                 console.error(err);
-                showToast('Błąd aktualizacji książki!', 'error');
+                showToast('Błąd aktualizacji książки!', 'error');
             }
         } else {
             try {
@@ -223,7 +224,7 @@ function setupBooksListeners() {
                 showToast('Książka została pomyślnie dodana!', 'success');
             } catch (err) {
                 console.error(err);
-                showToast('Nie udało się dodać książki!', 'error');
+                showToast('Nie udało się dodać książки!', 'error');
             }
         }
         resetForm();
@@ -310,20 +311,22 @@ function setupThemeToggle() {
     const themeBtn = document.getElementById('theme-toggle');
     if (!themeBtn) return;
 
+   
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
-        themeBtn.textContent = '☀️';
+      
     }
 
     themeBtn.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
         
+      
         if (document.body.classList.contains('dark-mode')) {
             localStorage.setItem('theme', 'dark');
-            themeBtn.textContent = '☀️';
+           
         } else {
             localStorage.setItem('theme', 'light');
-            themeBtn.textContent = '🌙';
+           
         }
     });
 }
