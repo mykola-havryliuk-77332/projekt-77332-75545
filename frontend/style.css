@@ -24,7 +24,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1440px;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -55,8 +55,10 @@ body {
 }
 
 .logo-icon {
-    height: 32px;
-    width: auto;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .logo h1 {
@@ -97,7 +99,7 @@ body {
 
 .main-content {
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 280px 1fr;
     gap: 30px;
     margin-top: 30px;
     margin-bottom: 50px;
@@ -234,7 +236,7 @@ button {
 
 .books-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
 }
 
