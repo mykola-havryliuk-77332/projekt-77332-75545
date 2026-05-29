@@ -71,7 +71,7 @@ function renderBooks(booksToRender = books) {
         const card = document.createElement('div');
         card.className = 'book-card';
         
-        const coverUrl = book.coverUrl ? book.coverUrl : 'https://via.placeholder.com/250x350?text=Brak+Ok%C5%8adki';
+        const coverUrl = book.coverUrl ? book.coverUrl : 'img/book.png';
 
         let avgRating = "Brak ocen";
         if(book.comments && book.comments.length > 0) {
@@ -301,7 +301,7 @@ window.openModal = function(id) {
         document.getElementById('modal-description').textContent = book.description || 'Brak opisu.';
         
         const coverImg = document.getElementById('modal-cover');
-        coverImg.src = book.coverUrl ? book.coverUrl : 'https://via.placeholder.com/250x350?text=Brak+Ok%C5%8adki';
+        coverImg.src = book.coverUrl ? book.coverUrl : 'img/book.png';
         renderComments(book.comments || []);
         document.getElementById('book-modal').classList.remove('hidden');
     }
