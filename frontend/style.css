@@ -471,6 +471,20 @@ body, .book-card, .main-header, .modal-content, input, textarea, select {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
+/* Логіка відображення іконок на кнопці */
+#theme-toggle .moon-icon { display: inline-block; } /* Показуємо місяць у світлій темі */
+#theme-toggle .sun-icon { display: none; }         /* Ховаємо сонце у світлій темі */
+
+body.dark-mode #theme-toggle .moon-icon { display: none; } /* Ховаємо місяць у темній темі */
+body.dark-mode #theme-toggle .sun-icon { display: inline-block; } /* Показуємо сонце у темній темі */
+
+/* Стиль для самих іконок, щоб вони були красивого розміру */
+#theme-toggle img {
+    height: 1.2rem;
+    width: auto;
+    vertical-align: middle;
+}
+
 #toast-container {
     position: fixed;
     bottom: 30px;
