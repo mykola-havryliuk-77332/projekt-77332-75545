@@ -24,9 +24,9 @@ body {
 }
 
 .container {
-    max-width: 1350px;
-    margin: 0 auto;
-    padding: 0 20px;
+    max-width: 100%;
+    margin: 0;
+    padding: 0 30px;
 }
 
 .main-header {
@@ -236,7 +236,7 @@ button {
 
 .books-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
 }
 
@@ -566,18 +566,20 @@ body.dark-mode #theme-toggle .sun-icon { display: inline-block; }
 }
 
 .star-rating input[type="radio"] {
-    display: none;
+    display: none !important;
 }
 
 .star-rating label {
     cursor: pointer;
     color: var(--text-muted);
     transition: color 0.2s ease;
+    display: inline-block;
 }
 
-.star-rating .star-icon {
-    width: 28px;
-    height: 28px;
+.star-rating svg {
+    width: 32px !important;
+    height: 32px !important;
+    display: block;
 }
 
 .star-rating label:hover,
