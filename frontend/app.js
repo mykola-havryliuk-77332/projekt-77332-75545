@@ -35,9 +35,27 @@ async function initApp() {
     setupAuthListeners();
     setupBooksListeners();
     toggleAdminMode();
-    
-    // Ініціалізація перемикача темної теми
     setupThemeToggle();
+}
+
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <span>${message}</span>
+        <span class="toast-close" onclick="this.parentElement.remove()">&times;</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Автоматично ховаємо через 3 секунди
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        toast.addEventListener('animationend', () => toast.remove());
+    }, 3000);
 }
 
 function renderBooks(booksToRender = books) {
@@ -119,10 +137,10 @@ function setupAuthListeners() {
 
         if(email === 'admin@admin.com') {
             isAdmin = true;
-            alert('Zalogowano pomyślnie jako Administrator!');
+            showToast('Zalogowano pomyślnie jako Administrator!', 'success');
         } else {
             isAdmin = false;
-            alert('Zalogowano jako Użytkownik!');
+            showToast('Zalogowano jako Użytkownik!', 'success');
         }
 
         toggleAdminMode();
@@ -134,6 +152,7 @@ function setupAuthListeners() {
         e.preventDefault();
         registerModal.classList.add('hidden');
         registerForm.reset();
+        showToast('Konto zostało pomyślnie utworzone!', 'success');
     });
 }
 
@@ -186,8 +205,10 @@ function setupBooksListeners() {
                 const res = await fetch(API_URL);
                 books = await res.json();
                 renderBooks();
+                showToast('Zaktualizowano informacje o książce.', 'success');
             } catch (err) {
                 console.error(err);
+                showToast('Błąd aktualizacji książki!', 'error');
             }
         } else {
             try {
@@ -199,8 +220,10 @@ function setupBooksListeners() {
                 const res = await fetch(API_URL);
                 books = await res.json();
                 renderBooks();
+                showToast('Książka została pomyślnie dodana!', 'success');
             } catch (err) {
                 console.error(err);
+                showToast('Nie udało się dodać książki!', 'error');
             }
         }
         resetForm();
@@ -218,6 +241,7 @@ function setupBooksListeners() {
     commentForm.addEventListener('submit', (e) => {
         e.preventDefault();
         e.target.reset(); 
+        showToast('Komentarz został dodany!', 'success');
     });
 }
 
@@ -230,8 +254,10 @@ window.deleteBook = async function(id) {
             const res = await fetch(API_URL);
             books = await res.json();
             renderBooks();
+            showToast('Książka usunięta z katalogu.', 'warning');
         } catch (err) {
             console.error(err);
+            showToast('Błąd podczas usuwania!', 'error');
         }
     }
 }
