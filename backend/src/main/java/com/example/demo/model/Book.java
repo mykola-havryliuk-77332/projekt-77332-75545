@@ -1,11 +1,8 @@
 package com.example.demo.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "books")
@@ -24,11 +21,15 @@ public class Book {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    // Зв'язок: у однієї книги може бути багато коментарів
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Comment> comments = new ArrayList<>();
+
     // Порожній конструктор (обов'язковий для JPA)
     public Book() {
     }
 
-    // Оновлений конструктор для зручності
+    // Конструктор для зручності
     public Book(String title, String author, int pages, String genre, String coverUrl, String description) {
         this.title = title;
         this.author = author;
@@ -93,5 +94,13 @@ public class Book {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 }
