@@ -38,7 +38,6 @@ async function initApp() {
     setupThemeToggle();
 }
 
-
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -52,7 +51,6 @@ function showToast(message, type = 'success') {
 
     container.appendChild(toast);
 
-    // Автоматично ховаємо через 3 секунди
     setTimeout(() => {
         toast.classList.add('fade-out');
         toast.addEventListener('animationend', () => toast.remove());
@@ -114,7 +112,7 @@ function setupUIListeners() {
     document.getElementById('cancel-edit-btn').addEventListener('click', resetForm);
 
     window.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal')) {
+        if (e.target.classList.contains('modal') && !e.target.classList.contains('full-page-modal')) {
             e.target.classList.add('hidden');
         }
     });
@@ -126,11 +124,24 @@ function setupAuthListeners() {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
 
+    const switchToRegister = document.getElementById('switch-to-register');
+    const switchToLogin = document.getElementById('switch-to-login');
+
     document.getElementById('btn-login').addEventListener('click', () => loginModal.classList.remove('hidden'));
     document.getElementById('btn-register').addEventListener('click', () => registerModal.classList.remove('hidden'));
     
     document.getElementById('close-login-modal').addEventListener('click', () => loginModal.classList.add('hidden'));
     document.getElementById('close-register-modal').addEventListener('click', () => registerModal.classList.add('hidden'));
+
+    switchToRegister.addEventListener('click', () => {
+        loginModal.classList.add('hidden');
+        registerModal.classList.remove('hidden');
+    });
+
+    switchToLogin.addEventListener('click', () => {
+        registerModal.classList.add('hidden');
+        loginModal.classList.remove('hidden');
+    });
 
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -174,7 +185,7 @@ function toggleAdminMode() {
     }
     
     const mainContent = document.querySelector('.main-content');
-    if (mainContent) mainContent.style.gridTemplateColumns = isAdmin ? '320px 1fr' : '1fr';
+    if (mainContent) mainContent.style.gridTemplateColumns = isAdmin ? '280px 1fr' : '1fr';
     renderBooks();
 }
 
@@ -209,7 +220,7 @@ function setupBooksListeners() {
                 showToast('Zaktualizowano informacje o książce.', 'success');
             } catch (err) {
                 console.error(err);
-                showToast('Błąd aktualizacji książки!', 'error');
+                showToast('Błąd aktualizacji książki!', 'error');
             }
         } else {
             try {
@@ -224,7 +235,7 @@ function setupBooksListeners() {
                 showToast('Książka została pomyślnie dodana!', 'success');
             } catch (err) {
                 console.error(err);
-                showToast('Nie udało się dodać książки!', 'error');
+                showToast('Nie udało się dodać książki!', 'error');
             }
         }
         resetForm();
@@ -311,22 +322,17 @@ function setupThemeToggle() {
     const themeBtn = document.getElementById('theme-toggle');
     if (!themeBtn) return;
 
-   
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
-      
     }
 
     themeBtn.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
         
-      
         if (document.body.classList.contains('dark-mode')) {
             localStorage.setItem('theme', 'dark');
-           
         } else {
             localStorage.setItem('theme', 'light');
-           
         }
     });
 }
