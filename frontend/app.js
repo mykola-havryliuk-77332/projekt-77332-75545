@@ -35,12 +35,15 @@ async function initApp() {
     setupAuthListeners();
     setupBooksListeners();
     toggleAdminMode();
+    
+    // Ініціалізація перемикача темної теми
+    setupThemeToggle();
 }
 
 function renderBooks(booksToRender = books) {
     const booksContainer = document.getElementById('books-container');
     if (!booksContainer) return;
-    booksContainer.innerHTML = ''; 
+    booksContainer.innerHTML = '';
 
     if (booksToRender.length === 0) {
         booksContainer.innerHTML = '<p class="empty-message">Brak wyników do wyświetlenia.</p>';
@@ -51,7 +54,6 @@ function renderBooks(booksToRender = books) {
         const card = document.createElement('div');
         card.className = 'book-card';
         
-        // ВИПРАВЛЕНО: замінено book.cover на book.coverUrl
         const coverUrl = book.coverUrl ? book.coverUrl : 'https://via.placeholder.com/250x350?text=Brak+Ok%C5%8adki';
 
         let avgRating = "Brak ocen";
@@ -138,7 +140,6 @@ function setupAuthListeners() {
 function toggleAdminMode() {
     const adminSection = document.getElementById('admin-section');
     if (adminSection) adminSection.style.display = isAdmin ? 'block' : 'none';
-    
     const commentForm = document.getElementById('add-comment-form');
     const loginPrompt = document.getElementById('login-prompt-comments');
 
@@ -154,7 +155,7 @@ function toggleAdminMode() {
     
     const mainContent = document.querySelector('.main-content');
     if (mainContent) mainContent.style.gridTemplateColumns = isAdmin ? '320px 1fr' : '1fr';
-    renderBooks(); 
+    renderBooks();
 }
 
 function setupBooksListeners() {
@@ -166,7 +167,6 @@ function setupBooksListeners() {
         e.preventDefault();
         const id = document.getElementById('edit-book-id').value;
         
-        // ВИПРАВЛЕНО: ключ тепер coverUrl (щоб Spring Boot його розпізнав)
         const bookData = {
             title: document.getElementById('title').value,
             author: document.getElementById('author').value,
@@ -196,7 +196,6 @@ function setupBooksListeners() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(bookData)
                 });
-                
                 const res = await fetch(API_URL);
                 books = await res.json();
                 renderBooks();
@@ -243,8 +242,6 @@ window.editBook = function(id) {
         document.getElementById('title').value = book.title;
         document.getElementById('author').value = book.author;
         document.getElementById('genre').value = book.genre || '';
-        
-        // ВИПРАВЛЕНО: замінено book.cover на book.coverUrl
         document.getElementById('cover').value = book.coverUrl || '';
         document.getElementById('description').value = book.description || '';
         
@@ -266,10 +263,7 @@ window.openModal = function(id) {
         document.getElementById('modal-description').textContent = book.description || 'Brak opisu.';
         
         const coverImg = document.getElementById('modal-cover');
-        
-        // ВИПРАВЛЕНО: замінено book.cover на book.coverUrl
         coverImg.src = book.coverUrl ? book.coverUrl : 'https://via.placeholder.com/250x350?text=Brak+Ok%C5%8adki';
-
         renderComments(book.comments || []);
         document.getElementById('book-modal').classList.remove('hidden');
     }
@@ -284,4 +278,26 @@ function renderComments(comments) {
             <p>${c.text}</p>
         </div>
     `).join('');
+}
+
+function setupThemeToggle() {
+    const themeBtn = document.getElementById('theme-toggle');
+    if (!themeBtn) return;
+
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        themeBtn.textContent = '☀️';
+    }
+
+    themeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('theme', 'dark');
+            themeBtn.textContent = '☀️';
+        } else {
+            localStorage.setItem('theme', 'light');
+            themeBtn.textContent = '🌙';
+        }
+    });
 }
