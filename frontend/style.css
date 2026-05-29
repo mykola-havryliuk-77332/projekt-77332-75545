@@ -47,9 +47,27 @@ body {
     gap: 15px;
 }
 
+.logo a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.logo-icon {
+    height: 32px;
+    width: auto;
+}
+
 .logo h1 {
+    color: var(--text-main);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.logo h1 .highlight {
     color: var(--primary-color);
-    font-size: 1.5rem;
 }
 
 .search-bar {
@@ -471,14 +489,12 @@ body, .book-card, .main-header, .modal-content, input, textarea, select {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Логіка відображення іконок на кнопці */
-#theme-toggle .moon-icon { display: inline-block; } /* Показуємо місяць у світлій темі */
-#theme-toggle .sun-icon { display: none; }         /* Ховаємо сонце у світлій темі */
+#theme-toggle .moon-icon { display: inline-block; }
+#theme-toggle .sun-icon { display: none; }
 
-body.dark-mode #theme-toggle .moon-icon { display: none; } /* Ховаємо місяць у темній темі */
-body.dark-mode #theme-toggle .sun-icon { display: inline-block; } /* Показуємо сонце у темній темі */
+body.dark-mode #theme-toggle .moon-icon { display: none; }
+body.dark-mode #theme-toggle .sun-icon { display: inline-block; }
 
-/* Стиль для самих іконок, щоб вони були красивого розміру */
 #theme-toggle img {
     height: 1.2rem;
     width: auto;
