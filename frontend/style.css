@@ -154,6 +154,8 @@ select {
     border-radius: 8px;
     font-family: inherit;
     box-sizing: border-box;
+    background-color: var(--bg-color);
+    color: var(--text-main);
 }
 
 input:focus,
@@ -254,7 +256,7 @@ button {
 
 .card-cover {
     height: 260px;
-    background: #e2e8f0;
+    background: var(--border-color);
     background-size: cover;
     background-position: center;
     cursor: pointer;
@@ -294,7 +296,7 @@ button {
     gap: 8px;
     padding: 10px 15px;
     border-top: 1px solid var(--border-color);
-    background: #f8fafc;
+    background: var(--bg-color);
 }
 
 .modal {
@@ -485,7 +487,7 @@ body.dark-mode {
     --border-color: #334155;
 }
 
-body, .book-card, .main-header, .modal-content, input, textarea, select {
+body, .book-card, .main-header, .modal-content, input, textarea, select, .card-actions, .card-cover, .comment, .add-book-section, .books-list-section {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
