@@ -31,7 +31,7 @@ async function initApp() {
     }
     renderBooks();
     setupUIListeners();
-    setupAuthListeners();
+    setupAuthForms();
     setupBooksListeners();
     updateAuthUI(); 
     toggleAdminMode();
@@ -105,35 +105,26 @@ function setupUIListeners() {
     });
 }
 
-function setupAuthListeners() {
-    const loginModal = document.getElementById('login-modal');
-    const registerModal = document.getElementById('register-modal');
+function setupAuthForms() {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
+    const loginModal = document.getElementById('login-modal');
+    const registerModal = document.getElementById('register-modal');
 
-    const closeLogin = document.getElementById('close-login-modal');
-    const closeRegister = document.getElementById('close-register-modal');
-    const switchToRegister = document.getElementById('switch-to-register');
-    const switchToLogin = document.getElementById('switch-to-login');
-    const closeProfileModal = document.getElementById('close-profile-modal');
-    const profileModal = document.getElementById('profile-modal');
+    document.getElementById('close-login-modal')?.addEventListener('click', () => loginModal.classList.add('hidden'));
+    document.getElementById('close-register-modal')?.addEventListener('click', () => registerModal.classList.add('hidden'));
+    document.getElementById('close-profile-modal')?.addEventListener('click', () => {
+        document.getElementById('profile-modal').classList.add('hidden');
+    });
 
-    if (closeLogin) closeLogin.addEventListener('click', () => loginModal.classList.add('hidden'));
-    if (closeRegister) closeRegister.addEventListener('click', () => registerModal.classList.add('hidden'));
-
-    if (switchToRegister) {
-        switchToRegister.addEventListener('click', () => {
-            loginModal.classList.add('hidden');
-            registerModal.classList.remove('hidden');
-        });
-    }
-
-    if (switchToLogin) {
-        switchToLogin.addEventListener('click', () => {
-            registerModal.classList.add('hidden');
-            loginModal.classList.remove('hidden');
-        });
-    }
+    document.getElementById('switch-to-register')?.addEventListener('click', () => {
+        loginModal.classList.add('hidden');
+        registerModal.classList.remove('hidden');
+    });
+    document.getElementById('switch-to-login')?.addEventListener('click', () => {
+        registerModal.classList.add('hidden');
+        loginModal.classList.remove('hidden');
+    });
 
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
@@ -162,19 +153,15 @@ function setupAuthListeners() {
             const inputs = registerForm.querySelectorAll('input');
             const name = inputs[0].value;
             const email = inputs[1].value;
+            
             isAdmin = false;
             currentUser = { name: name, email: email };
+            
             registerModal.classList.add('hidden');
             registerForm.reset();
             updateAuthUI();
             toggleAdminMode();
             showToast('Konto utworzone. Zostałeś automatycznie zalogowany!', 'success');
-        });
-    }
-
-    if (closeProfileModal && profileModal) {
-        closeProfileModal.addEventListener('click', () => {
-            profileModal.classList.add('hidden');
         });
     }
 }
@@ -183,33 +170,23 @@ function updateAuthUI() {
     const authContainer = document.querySelector('.auth-buttons');
     if (!authContainer) return;
 
-    let actionWrapper = document.getElementById('auth-action-wrapper');
-    if (!actionWrapper) {
-        actionWrapper = document.createElement('div');
-        actionWrapper.id = 'auth-action-wrapper';
-        authContainer.appendChild(actionWrapper);
-    }
-
-    const oldUnauth = document.getElementById('unauth-controls');
-    const oldAuth = document.getElementById('auth-controls');
-    const oldBtnLogin = document.getElementById('btn-login');
-    const oldBtnRegister = document.getElementById('btn-register');
-
-    if (oldUnauth) oldUnauth.remove();
-    if (oldAuth) oldAuth.remove();
-    if (oldBtnLogin && oldBtnLogin.parentElement === authContainer) oldBtnLogin.remove();
-    if (oldBtnRegister && oldBtnRegister.parentElement === authContainer) oldBtnRegister.remove();
+    const themeBtn = document.getElementById('theme-toggle');
+    authContainer.innerHTML = '';
+    if (themeBtn) authContainer.appendChild(themeBtn);
 
     if (currentUser) {
-        actionWrapper.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <span style="font-weight: 600; color: var(--primary-color);">Cześć, ${currentUser.name}!</span>
-                <button id="btn-profile" class="btn-outline" style="padding: 6px 12px;">Profil</button>
-                <button id="btn-logout" class="btn-danger" style="padding: 6px 12px;">Wyloguj</button>
-            </div>
+        const authDiv = document.createElement('div');
+        authDiv.style.display = 'flex';
+        authDiv.style.alignItems = 'center';
+        authDiv.style.gap = '15px';
+        authDiv.innerHTML = `
+            <span style="font-weight: 600; color: var(--primary-color);">Cześć, ${currentUser.name}!</span>
+            <button id="dynamic-btn-profile" class="btn-outline" style="padding: 6px 12px;">Profil</button>
+            <button id="dynamic-btn-logout" class="btn-danger" style="padding: 6px 12px;">Wyloguj</button>
         `;
+        authContainer.appendChild(authDiv);
 
-        document.getElementById('btn-logout').addEventListener('click', () => {
+        document.getElementById('dynamic-btn-logout').addEventListener('click', () => {
             currentUser = null;
             isAdmin = false;
             updateAuthUI();
@@ -217,7 +194,7 @@ function updateAuthUI() {
             showToast('Wylogowano pomyślnie.', 'warning');
         });
 
-        document.getElementById('btn-profile').addEventListener('click', () => {
+        document.getElementById('dynamic-btn-profile').addEventListener('click', () => {
             const profileModal = document.getElementById('profile-modal');
             if (profileModal) {
                 document.getElementById('profile-name-display').textContent = currentUser.name;
@@ -227,19 +204,21 @@ function updateAuthUI() {
             }
         });
     } else {
-        actionWrapper.innerHTML = `
-            <div style="display: flex; gap: 10px;">
-                <button id="btn-login" class="btn-outline">Zaloguj</button>
-                <button id="btn-register" class="btn-primary">Zarejestruj</button>
-            </div>
+        const unauthDiv = document.createElement('div');
+        unauthDiv.style.display = 'flex';
+        unauthDiv.style.gap = '10px';
+        unauthDiv.innerHTML = `
+            <button id="dynamic-btn-login" class="btn-outline">Zaloguj</button>
+            <button id="dynamic-btn-register" class="btn-primary">Zarejestruj</button>
         `;
+        authContainer.appendChild(unauthDiv);
 
-        document.getElementById('btn-login').addEventListener('click', () => {
+        document.getElementById('dynamic-btn-login').addEventListener('click', () => {
             const loginModal = document.getElementById('login-modal');
             if (loginModal) loginModal.classList.remove('hidden');
         });
 
-        document.getElementById('btn-register').addEventListener('click', () => {
+        document.getElementById('dynamic-btn-register').addEventListener('click', () => {
             const regModal = document.getElementById('register-modal');
             if (regModal) regModal.classList.remove('hidden');
         });
