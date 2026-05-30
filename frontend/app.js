@@ -31,7 +31,7 @@ async function initApp() {
     }
     renderBooks();
     setupUIListeners();
-    setupAuthForms();
+    setupAuthListeners();
     setupBooksListeners();
     updateAuthUI(); 
     toggleAdminMode();
@@ -65,8 +65,8 @@ function renderBooks(booksToRender = books) {
         const coverUrl = book.coverUrl ? book.coverUrl : 'img/book.png';
         let avgRating = "Brak ocen";
         if(book.comments && book.comments.length > 0) {
-            const sum = book.comments.reduce((acc, curr) => acc + (curr.rating ? curr.rating.length : 0), 0);
-            avgRating = "⭐".repeat(Math.round(sum / book.comments.length));
+            const sum = book.comments.reduce((acc, curr) => acc + Number(curr.rating || 0), 0);
+            avgRating = "⭐".repeat(Math.round(sum / book.comments.length) || 0);
         }
         card.innerHTML = `
             <div class="card-cover" style="background-image: url('${coverUrl}')" onclick="openModal('${book.id}')"></div>
@@ -94,10 +94,10 @@ function resetForm() {
 }
 
 function setupUIListeners() {
-    document.getElementById('close-book-modal').addEventListener('click', () => {
-        document.getElementById('book-modal').classList.add('hidden');
+    document.getElementById('close-book-modal')?.addEventListener('click', () => {
+        document.getElementById('book-modal')?.classList.add('hidden');
     });
-    document.getElementById('cancel-edit-btn').addEventListener('click', resetForm);
+    document.getElementById('cancel-edit-btn')?.addEventListener('click', resetForm);
     window.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal') && !e.target.classList.contains('full-page-modal')) {
             e.target.classList.add('hidden');
@@ -105,27 +105,31 @@ function setupUIListeners() {
     });
 }
 
-function setupAuthForms() {
+function setupAuthListeners() {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const loginModal = document.getElementById('login-modal');
     const registerModal = document.getElementById('register-modal');
 
-    document.getElementById('close-login-modal')?.addEventListener('click', () => loginModal.classList.add('hidden'));
-    document.getElementById('close-register-modal')?.addEventListener('click', () => registerModal.classList.add('hidden'));
-    document.getElementById('close-profile-modal')?.addEventListener('click', () => {
-        document.getElementById('profile-modal').classList.add('hidden');
-    });
+    // Кнопки відкриття
+    document.getElementById('btn-login')?.addEventListener('click', () => loginModal?.classList.remove('hidden'));
+    document.getElementById('btn-register')?.addEventListener('click', () => registerModal?.classList.remove('hidden'));
 
+    // Кнопки закриття
+    document.getElementById('close-login-modal')?.addEventListener('click', () => loginModal?.classList.add('hidden'));
+    document.getElementById('close-register-modal')?.addEventListener('click', () => registerModal?.classList.add('hidden'));
+
+    // Перемикання
     document.getElementById('switch-to-register')?.addEventListener('click', () => {
-        loginModal.classList.add('hidden');
-        registerModal.classList.remove('hidden');
+        loginModal?.classList.add('hidden');
+        registerModal?.classList.remove('hidden');
     });
     document.getElementById('switch-to-login')?.addEventListener('click', () => {
-        registerModal.classList.add('hidden');
-        loginModal.classList.remove('hidden');
+        registerModal?.classList.add('hidden');
+        loginModal?.classList.remove('hidden');
     });
 
+    // Логіка входу
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault(); 
@@ -140,13 +144,14 @@ function setupAuthForms() {
                 currentUser = { name: nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1), email: email };
                 showToast('Zalogowano pomyślnie!', 'success');
             }
-            loginModal.classList.add('hidden');
+            loginModal?.classList.add('hidden');
             loginForm.reset();
             updateAuthUI();
             toggleAdminMode();
         });
     }
 
+    // Логіка реєстрації
     if (registerForm) {
         registerForm.addEventListener('submit', (e) => {
             e.preventDefault(); 
@@ -157,79 +162,74 @@ function setupAuthForms() {
             isAdmin = false;
             currentUser = { name: name, email: email };
             
-            registerModal.classList.add('hidden');
+            registerModal?.classList.add('hidden');
             registerForm.reset();
             updateAuthUI();
             toggleAdminMode();
             showToast('Konto utworzone. Zostałeś automatycznie zalogowany!', 'success');
         });
     }
+
+    // Логіка виходу
+    document.getElementById('btn-logout')?.addEventListener('click', () => {
+        currentUser = null;
+        isAdmin = false;
+        updateAuthUI();
+        toggleAdminMode();
+        showToast('Wylogowano pomyślnie.', 'warning');
+    });
+
+    // Відкриття/закриття профілю
+    const profileModal = document.getElementById('profile-modal');
+    document.getElementById('btn-profile')?.addEventListener('click', () => {
+        if (currentUser && profileModal) {
+            document.getElementById('profile-name-display').textContent = currentUser.name;
+            document.getElementById('profile-email-display').textContent = currentUser.email;
+            document.getElementById('profile-role-display').textContent = isAdmin ? 'Administrator' : 'Użytkownik';
+            profileModal.classList.remove('hidden');
+        }
+    });
+
+    document.getElementById('close-profile-modal')?.addEventListener('click', () => {
+        profileModal?.classList.add('hidden');
+    });
 }
 
 function updateAuthUI() {
-    const authContainer = document.querySelector('.auth-buttons');
-    if (!authContainer) return;
-
-    const themeBtn = document.getElementById('theme-toggle');
-    authContainer.innerHTML = '';
-    if (themeBtn) authContainer.appendChild(themeBtn);
+    const unauthControls = document.getElementById('unauth-controls');
+    const authControls = document.getElementById('auth-controls');
+    const greeting = document.getElementById('user-greeting');
 
     if (currentUser) {
-        const authDiv = document.createElement('div');
-        authDiv.style.display = 'flex';
-        authDiv.style.alignItems = 'center';
-        authDiv.style.gap = '15px';
-        authDiv.innerHTML = `
-            <span style="font-weight: 600; color: var(--primary-color);">Cześć, ${currentUser.name}!</span>
-            <button id="dynamic-btn-profile" class="btn-outline" style="padding: 6px 12px;">Profil</button>
-            <button id="dynamic-btn-logout" class="btn-danger" style="padding: 6px 12px;">Wyloguj</button>
-        `;
-        authContainer.appendChild(authDiv);
-
-        document.getElementById('dynamic-btn-logout').addEventListener('click', () => {
-            currentUser = null;
-            isAdmin = false;
-            updateAuthUI();
-            toggleAdminMode();
-            showToast('Wylogowano pomyślnie.', 'warning');
-        });
-
-        document.getElementById('dynamic-btn-profile').addEventListener('click', () => {
-            const profileModal = document.getElementById('profile-modal');
-            if (profileModal) {
-                document.getElementById('profile-name-display').textContent = currentUser.name;
-                document.getElementById('profile-email-display').textContent = currentUser.email;
-                document.getElementById('profile-role-display').textContent = isAdmin ? 'Administrator' : 'Użytkownik';
-                profileModal.classList.remove('hidden');
-            }
-        });
+        if (unauthControls) {
+            unauthControls.style.display = 'none';
+            unauthControls.classList.add('hidden');
+        }
+        if (authControls) {
+            authControls.style.display = 'flex';
+            authControls.classList.remove('hidden');
+        }
+        if (greeting) greeting.textContent = `Cześć, ${currentUser.name}!`;
     } else {
-        const unauthDiv = document.createElement('div');
-        unauthDiv.style.display = 'flex';
-        unauthDiv.style.gap = '10px';
-        unauthDiv.innerHTML = `
-            <button id="dynamic-btn-login" class="btn-outline">Zaloguj</button>
-            <button id="dynamic-btn-register" class="btn-primary">Zarejestruj</button>
-        `;
-        authContainer.appendChild(unauthDiv);
-
-        document.getElementById('dynamic-btn-login').addEventListener('click', () => {
-            const loginModal = document.getElementById('login-modal');
-            if (loginModal) loginModal.classList.remove('hidden');
-        });
-
-        document.getElementById('dynamic-btn-register').addEventListener('click', () => {
-            const regModal = document.getElementById('register-modal');
-            if (regModal) regModal.classList.remove('hidden');
-        });
+        if (unauthControls) {
+            unauthControls.style.display = 'flex';
+            unauthControls.classList.remove('hidden');
+        }
+        if (authControls) {
+            authControls.style.display = 'none';
+            authControls.classList.add('hidden');
+        }
+        if (greeting) greeting.textContent = '';
     }
 }
 
 function toggleAdminMode() {
     const adminSection = document.getElementById('admin-section');
     if (adminSection) adminSection.style.display = isAdmin ? 'block' : 'none';
+    
     const commentForm = document.getElementById('add-comment-form');
     const loginPrompt = document.getElementById('login-prompt-comments');
+    
     if (commentForm && loginPrompt) {
         if (currentUser) {
             commentForm.classList.remove('hidden');
@@ -249,66 +249,72 @@ function setupBooksListeners() {
     const searchInput = document.getElementById('search-input');
     const commentForm = document.getElementById('add-comment-form');
 
-    bookForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('edit-book-id').value;
-        const bookData = {
-            title: document.getElementById('title').value,
-            author: document.getElementById('author').value,
-            genre: document.getElementById('genre').value,
-            coverUrl: document.getElementById('cover').value, 
-            description: document.getElementById('description').value,
-            pages: 150
-        };
+    if (bookForm) {
+        bookForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-book-id').value;
+            const bookData = {
+                title: document.getElementById('title').value,
+                author: document.getElementById('author').value,
+                genre: document.getElementById('genre').value,
+                coverUrl: document.getElementById('cover').value, 
+                description: document.getElementById('description').value,
+                pages: 150
+            };
 
-        if (id) {
-            try {
-                await fetch(`${API_URL}/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bookData)
-                });
-                const res = await fetch(API_URL);
-                books = await res.json();
-                renderBooks();
-                showToast('Zaktualizowano informacje o książce.', 'success');
-            } catch (err) {
-                console.error(err);
-                showToast('Błąd aktualizacji książki!', 'error');
+            if (id) {
+                try {
+                    await fetch(`${API_URL}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bookData)
+                    });
+                    const res = await fetch(API_URL);
+                    books = await res.json();
+                    renderBooks();
+                    showToast('Zaktualizowano informacje o książce.', 'success');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Błąd aktualizacji książki!', 'error');
+                }
+            } else {
+                try {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bookData)
+                    });
+                    const res = await fetch(API_URL);
+                    books = await res.json();
+                    renderBooks();
+                    showToast('Książka została pomyślnie dodana!', 'success');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Nie udało się dodać książki!', 'error');
+                }
             }
-        } else {
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bookData)
-                });
-                const res = await fetch(API_URL);
-                books = await res.json();
-                renderBooks();
-                showToast('Książka została pomyślnie dodana!', 'success');
-            } catch (err) {
-                console.error(err);
-                showToast('Nie udało się dodać książki!', 'error');
-            }
-        }
-        resetForm();
-    });
+            resetForm();
+        });
+    }
 
-    searchInput.addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        const filtered = books.filter(b => 
-            b.title.toLowerCase().includes(term) || 
-            b.author.toLowerCase().includes(term)
-        );
-        renderBooks(filtered);
-    });
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = books.filter(b => 
+                b.title.toLowerCase().includes(term) || 
+                b.author.toLowerCase().includes(term)
+            );
+            renderBooks(filtered);
+        });
+    }
 
-    commentForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        e.target.reset(); 
-        showToast('Komentarz został dodany!', 'success');
-    });
+    if (commentForm) {
+        commentForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            e.target.reset(); 
+            showToast('Komentarz został dodany!', 'success');
+        });
+    }
 }
 
 window.deleteBook = async function(id) {
@@ -353,9 +359,9 @@ window.openModal = function(id) {
         document.getElementById('modal-genre').textContent = book.genre || 'Książka';
         document.getElementById('modal-description').textContent = book.description || 'Brak opisu.';
         const coverImg = document.getElementById('modal-cover');
-        coverImg.src = book.coverUrl ? book.coverUrl : 'img/book.png';
+        if (coverImg) coverImg.src = book.coverUrl ? book.coverUrl : 'img/book.png';
         renderComments(book.comments || []);
-        document.getElementById('book-modal').classList.remove('hidden');
+        document.getElementById('book-modal')?.classList.remove('hidden');
     }
 }
 
