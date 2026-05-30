@@ -36,7 +36,7 @@ async function initApp() {
     setupAuthListeners();
     setupBooksListeners();
     toggleAdminMode();
-    updateAuthUI();
+    updateAuthUI(); 
     setupThemeToggle();
 }
 
@@ -203,14 +203,6 @@ function setupAuthListeners() {
     document.getElementById('close-profile-modal').addEventListener('click', () => {
         profileModal.classList.add('hidden');
     });
-
-    const passForm = document.getElementById('change-password-form');
-    passForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        showToast('Hasło zostało zaktualizowane!', 'success');
-        profileModal.classList.add('hidden');
-        passForm.reset();
-    });
 }
 
 function updateAuthUI() {
@@ -235,7 +227,7 @@ function toggleAdminMode() {
     
     const commentForm = document.getElementById('add-comment-form');
     const loginPrompt = document.getElementById('login-prompt-comments');
-    
+
     if (commentForm && loginPrompt) {
         if (currentUser) {
             commentForm.classList.remove('hidden');
