@@ -1,5 +1,6 @@
 const API_URL = 'https://projekt-77332-75545-production.up.railway.app/api/books';
 let books = [];
+
 let isAdmin = false;
 let currentUser = null; 
 let currentBookId = null;
@@ -18,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadComponent(elementId, filepath) {
-    // Додаємо ?v=... щоб браузер не брав старі файли з кешу, а завжди вантажив нові
+
     const response = await fetch(filepath + '?v=' + new Date().getTime());
     const html = await response.text();
     document.getElementById(elementId).innerHTML = html;
@@ -36,8 +37,9 @@ async function initApp() {
     setupUIListeners();
     setupAuthListeners();
     setupBooksListeners();
-    toggleAdminMode();
+    
     updateAuthUI(); 
+    toggleAdminMode();
     setupThemeToggle();
 }
 
@@ -146,6 +148,7 @@ function setupAuthListeners() {
         loginModal.classList.remove('hidden');
     });
 
+
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = loginForm.querySelector('input[type="email"]').value;
@@ -161,11 +164,13 @@ function setupAuthListeners() {
             showToast('Zalogowano pomyślnie!', 'success');
         }
 
+
         updateAuthUI();
         toggleAdminMode();
         loginModal.classList.add('hidden');
         loginForm.reset();
     });
+
 
     registerForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -176,6 +181,7 @@ function setupAuthListeners() {
         isAdmin = false;
         currentUser = { name: name, email: email };
         
+
         updateAuthUI();
         toggleAdminMode();
         registerModal.classList.add('hidden');
@@ -183,13 +189,16 @@ function setupAuthListeners() {
         showToast('Konto utworzone. Zostałeś automatycznie zalogowany!', 'success');
     });
 
+
     document.getElementById('btn-logout').addEventListener('click', () => {
         currentUser = null;
         isAdmin = false;
+        
         updateAuthUI();
         toggleAdminMode();
         showToast('Wylogowano pomyślnie.', 'warning');
     });
+
 
     const profileModal = document.getElementById('profile-modal');
     document.getElementById('btn-profile').addEventListener('click', () => {
@@ -206,35 +215,28 @@ function setupAuthListeners() {
     });
 }
 
-// Повністю оновлена функція перемикання кнопок шапки
 function updateAuthUI() {
     const unauthControls = document.getElementById('unauth-controls');
     const authControls = document.getElementById('auth-controls');
     const greeting = document.getElementById('user-greeting');
     
+    if (!unauthControls || !authControls) return;
+
     if (currentUser) {
-        // Ховаємо кнопки логіну
-        if(unauthControls) {
-            unauthControls.style.display = 'none';
-            unauthControls.classList.add('hidden');
-        }
-        // Показуємо профіль
-        if(authControls) {
-            authControls.style.display = 'flex';
-            authControls.classList.remove('hidden');
-        }
+
+        unauthControls.style.display = 'none';
+        unauthControls.classList.add('hidden');
+        
+        authControls.style.display = 'flex';
+        authControls.classList.remove('hidden');
+        
         if(greeting) greeting.textContent = `Cześć, ${currentUser.name}!`;
     } else {
-        // Показуємо кнопки логіну
-        if(unauthControls) {
-            unauthControls.style.display = 'flex';
-            unauthControls.classList.remove('hidden');
-        }
-        // Ховаємо профіль
-        if(authControls) {
-            authControls.style.display = 'none';
-            authControls.classList.add('hidden');
-        }
+        unauthControls.style.display = 'flex';
+        unauthControls.classList.remove('hidden');
+        authControls.style.display = 'none';
+        authControls.classList.add('hidden');
+        
         if(greeting) greeting.textContent = '';
     }
 }
