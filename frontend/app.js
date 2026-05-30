@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadComponent('admin-placeholder', 'components/admin-section.html');
         await loadComponent('catalog-placeholder', 'components/catalog-section.html');
         await loadComponent('modals-placeholder', 'components/modals.html');
-
         initApp();
     } catch (error) {
         console.error(error);
@@ -30,12 +29,10 @@ async function initApp() {
     } catch (err) {
         console.error(err);
     }
-    
     renderBooks();
     setupUIListeners();
     setupAuthListeners();
     setupBooksListeners();
-    
     updateAuthUI(); 
     toggleAdminMode();
     setupThemeToggle();
@@ -44,16 +41,10 @@ async function initApp() {
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     if (!container) return;
-
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerHTML = `
-        <span>${message}</span>
-        <span class="toast-close" onclick="this.parentElement.remove()">&times;</span>
-    `;
-
+    toast.innerHTML = `<span>${message}</span><span class="toast-close" onclick="this.parentElement.remove()">&times;</span>`;
     container.appendChild(toast);
-
     setTimeout(() => {
         toast.classList.add('fade-out');
         toast.addEventListener('animationend', () => toast.remove());
@@ -64,24 +55,19 @@ function renderBooks(booksToRender = books) {
     const booksContainer = document.getElementById('books-container');
     if (!booksContainer) return;
     booksContainer.innerHTML = '';
-
     if (booksToRender.length === 0) {
         booksContainer.innerHTML = '<p class="empty-message">Brak wyników do wyświetlenia.</p>';
         return;
     }
-
     booksToRender.forEach(book => {
         const card = document.createElement('div');
         card.className = 'book-card';
-        
         const coverUrl = book.coverUrl ? book.coverUrl : 'img/book.png';
-
         let avgRating = "Brak ocen";
         if(book.comments && book.comments.length > 0) {
             const sum = book.comments.reduce((acc, curr) => acc + (curr.rating ? curr.rating.length : 0), 0);
             avgRating = "⭐".repeat(Math.round(sum / book.comments.length));
         }
-
         card.innerHTML = `
             <div class="card-cover" style="background-image: url('${coverUrl}')" onclick="openModal('${book.id}')"></div>
             <div class="card-content" onclick="openModal('${book.id}')">
@@ -111,9 +97,7 @@ function setupUIListeners() {
     document.getElementById('close-book-modal').addEventListener('click', () => {
         document.getElementById('book-modal').classList.add('hidden');
     });
-    
     document.getElementById('cancel-edit-btn').addEventListener('click', resetForm);
-
     window.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal') && !e.target.classList.contains('full-page-modal')) {
             e.target.classList.add('hidden');
@@ -126,129 +110,143 @@ function setupAuthListeners() {
     const registerModal = document.getElementById('register-modal');
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
+    const btnLogin = document.getElementById('btn-login');
+    const btnRegister = document.getElementById('btn-register');
+
+    if (btnLogin) btnLogin.addEventListener('click', () => loginModal.classList.remove('hidden'));
+    if (btnRegister) btnRegister.addEventListener('click', () => registerModal.classList.remove('hidden'));
+    
+    const closeLogin = document.getElementById('close-login-modal');
+    const closeRegister = document.getElementById('close-register-modal');
+    
+    if (closeLogin) closeLogin.addEventListener('click', () => loginModal.classList.add('hidden'));
+    if (closeRegister) closeRegister.addEventListener('click', () => registerModal.classList.add('hidden'));
 
     const switchToRegister = document.getElementById('switch-to-register');
     const switchToLogin = document.getElementById('switch-to-login');
 
-    document.getElementById('btn-login').addEventListener('click', () => loginModal.classList.remove('hidden'));
-    document.getElementById('btn-register').addEventListener('click', () => registerModal.classList.remove('hidden'));
-    
-    document.getElementById('close-login-modal').addEventListener('click', () => loginModal.classList.add('hidden'));
-    document.getElementById('close-register-modal').addEventListener('click', () => registerModal.classList.add('hidden'));
+    if (switchToRegister) {
+        switchToRegister.addEventListener('click', () => {
+            loginModal.classList.add('hidden');
+            registerModal.classList.remove('hidden');
+        });
+    }
 
-    switchToRegister.addEventListener('click', () => {
-        loginModal.classList.add('hidden');
-        registerModal.classList.remove('hidden');
-    });
+    if (switchToLogin) {
+        switchToLogin.addEventListener('click', () => {
+            registerModal.classList.add('hidden');
+            loginModal.classList.remove('hidden');
+        });
+    }
 
-    switchToLogin.addEventListener('click', () => {
-        registerModal.classList.add('hidden');
-        loginModal.classList.remove('hidden');
-    });
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault(); 
+            const email = loginForm.querySelector('input[type="email"]').value;
+            if(email === 'admin@admin.com') {
+                isAdmin = true;
+                currentUser = { name: 'Administrator', email: email };
+                showToast('Zalogowano pomyślnie jako Administrator!', 'success');
+            } else {
+                isAdmin = false;
+                const nameFromEmail = email.split('@')[0];
+                currentUser = { name: nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1), email: email };
+                showToast('Zalogowano pomyślnie!', 'success');
+            }
+            updateAuthUI();
+            toggleAdminMode();
+            loginModal.classList.add('hidden');
+            loginForm.reset();
+        });
+    }
 
-
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault(); 
-        const email = loginForm.querySelector('input[type="email"]').value;
-
-        if(email === 'admin@admin.com') {
-            isAdmin = true;
-            currentUser = { name: 'Administrator', email: email };
-            showToast('Zalogowano pomyślnie jako Administrator!', 'success');
-        } else {
+    if (registerForm) {
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault(); 
+            const inputs = registerForm.querySelectorAll('input');
+            const name = inputs[0].value;
+            const email = inputs[1].value;
             isAdmin = false;
-            const nameFromEmail = email.split('@')[0];
-            currentUser = { name: nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1), email: email };
-            showToast('Zalogowano pomyślnie!', 'success');
-        }
+            currentUser = { name: name, email: email };
+            updateAuthUI();
+            toggleAdminMode();
+            registerModal.classList.add('hidden');
+            registerForm.reset();
+            showToast('Konto utworzone. Zostałeś automatycznie zalogowany!', 'success');
+        });
+    }
 
-        updateAuthUI();
-        toggleAdminMode();
-        loginModal.classList.add('hidden');
-        loginForm.reset();
-    });
+    const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout) {
+        btnLogout.addEventListener('click', () => {
+            currentUser = null;
+            isAdmin = false;
+            updateAuthUI();
+            toggleAdminMode();
+            showToast('Wylogowano pomyślnie.', 'warning');
+        });
+    }
 
-
-    registerForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const inputs = registerForm.querySelectorAll('input');
-        const name = inputs[0].value;
-        const email = inputs[1].value;
-        
-        isAdmin = false;
-        currentUser = { name: name, email: email };
-        
-        updateAuthUI();
-        toggleAdminMode();
-        registerModal.classList.add('hidden');
-        registerForm.reset();
-        showToast('Konto utworzone. Zostałeś automatycznie zalogowany!', 'success');
-    });
-
-
-    document.getElementById('btn-logout').addEventListener('click', () => {
-        currentUser = null;
-        isAdmin = false;
-        
-        updateAuthUI();
-        toggleAdminMode();
-        showToast('Wylogowano pomyślnie.', 'warning');
-    });
-
- 
+    const btnProfile = document.getElementById('btn-profile');
     const profileModal = document.getElementById('profile-modal');
-    document.getElementById('btn-profile').addEventListener('click', () => {
-        if(currentUser) {
-            document.getElementById('profile-name-display').textContent = currentUser.name;
-            document.getElementById('profile-email-display').textContent = currentUser.email;
-            document.getElementById('profile-role-display').textContent = isAdmin ? 'Administrator' : 'Użytkownik';
-            profileModal.classList.remove('hidden');
+    
+    if (btnProfile && profileModal) {
+        btnProfile.addEventListener('click', () => {
+            if(currentUser) {
+                document.getElementById('profile-name-display').textContent = currentUser.name;
+                document.getElementById('profile-email-display').textContent = currentUser.email;
+                document.getElementById('profile-role-display').textContent = isAdmin ? 'Administrator' : 'Użytkownik';
+                profileModal.classList.remove('hidden');
+            }
+        });
+        const closeProfileModal = document.getElementById('close-profile-modal');
+        if (closeProfileModal) {
+            closeProfileModal.addEventListener('click', () => {
+                profileModal.classList.add('hidden');
+            });
         }
-    });
-
-    document.getElementById('close-profile-modal').addEventListener('click', () => {
-        profileModal.classList.add('hidden');
-    });
+    }
 }
 
-
 function updateAuthUI() {
+    const btnLogin = document.getElementById('btn-login');
+    const btnRegister = document.getElementById('btn-register');
     const unauthControls = document.getElementById('unauth-controls');
     const authControls = document.getElementById('auth-controls');
     const greeting = document.getElementById('user-greeting');
-    
-    if (!unauthControls || !authControls) return;
 
     if (currentUser) {
-      
-        unauthControls.classList.add('hidden');
-        unauthControls.style.display = 'none';
-        
-    
-        authControls.classList.remove('hidden');
-        authControls.style.display = 'flex';
-        
-        if(greeting) greeting.textContent = `Cześć, ${currentUser.name}!`;
+        if (btnLogin) btnLogin.style.display = 'none';
+        if (btnRegister) btnRegister.style.display = 'none';
+        if (unauthControls) {
+            unauthControls.style.display = 'none';
+            unauthControls.classList.add('hidden');
+        }
+        if (authControls) {
+            authControls.style.display = 'flex';
+            authControls.classList.remove('hidden');
+        }
+        if (greeting) greeting.textContent = `Cześć, ${currentUser.name}!`;
     } else {
-      
-        unauthControls.classList.remove('hidden');
-        unauthControls.style.display = 'flex';
-        
-      
-        authControls.classList.add('hidden');
-        authControls.style.display = 'none';
-        
-        if(greeting) greeting.textContent = '';
+        if (btnLogin) btnLogin.style.display = 'inline-block';
+        if (btnRegister) btnRegister.style.display = 'inline-block';
+        if (unauthControls) {
+            unauthControls.style.display = 'flex';
+            unauthControls.classList.remove('hidden');
+        }
+        if (authControls) {
+            authControls.style.display = 'none';
+            authControls.classList.add('hidden');
+        }
+        if (greeting) greeting.textContent = '';
     }
 }
 
 function toggleAdminMode() {
     const adminSection = document.getElementById('admin-section');
     if (adminSection) adminSection.style.display = isAdmin ? 'block' : 'none';
-    
     const commentForm = document.getElementById('add-comment-form');
     const loginPrompt = document.getElementById('login-prompt-comments');
-
     if (commentForm && loginPrompt) {
         if (currentUser) {
             commentForm.classList.remove('hidden');
@@ -258,7 +256,6 @@ function toggleAdminMode() {
             loginPrompt.classList.remove('hidden');
         }
     }
-    
     const mainContent = document.querySelector('.main-content');
     if (mainContent) mainContent.style.gridTemplateColumns = isAdmin ? '280px 1fr' : '1fr';
     renderBooks();
@@ -272,7 +269,6 @@ function setupBooksListeners() {
     bookForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('edit-book-id').value;
-        
         const bookData = {
             title: document.getElementById('title').value,
             author: document.getElementById('author').value,
@@ -357,7 +353,6 @@ window.editBook = function(id) {
         document.getElementById('genre').value = book.genre || '';
         document.getElementById('cover').value = book.coverUrl || '';
         document.getElementById('description').value = book.description || '';
-        
         document.getElementById('edit-book-id').value = book.id;
         document.getElementById('form-title').textContent = 'Edytuj książkę';
         document.getElementById('submit-book-btn').textContent = 'Zapisz zmiany';
@@ -374,7 +369,6 @@ window.openModal = function(id) {
         document.getElementById('modal-author').textContent = book.author;
         document.getElementById('modal-genre').textContent = book.genre || 'Książka';
         document.getElementById('modal-description').textContent = book.description || 'Brak opisu.';
-        
         const coverImg = document.getElementById('modal-cover');
         coverImg.src = book.coverUrl ? book.coverUrl : 'img/book.png';
         renderComments(book.comments || []);
@@ -396,14 +390,11 @@ function renderComments(comments) {
 function setupThemeToggle() {
     const themeBtn = document.getElementById('theme-toggle');
     if (!themeBtn) return;
-
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
     }
-
     themeBtn.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
-        
         if (document.body.classList.contains('dark-mode')) {
             localStorage.setItem('theme', 'dark');
         } else {
