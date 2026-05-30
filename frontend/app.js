@@ -1,6 +1,5 @@
 const API_URL = 'https://projekt-77332-75545-production.up.railway.app/api/books';
 let books = [];
-
 let isAdmin = false;
 let currentUser = null; 
 let currentBookId = null;
@@ -19,7 +18,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadComponent(elementId, filepath) {
-
     const response = await fetch(filepath + '?v=' + new Date().getTime());
     const html = await response.text();
     document.getElementById(elementId).innerHTML = html;
@@ -150,7 +148,7 @@ function setupAuthListeners() {
 
 
     loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+        e.preventDefault(); 
         const email = loginForm.querySelector('input[type="email"]').value;
 
         if(email === 'admin@admin.com') {
@@ -163,7 +161,6 @@ function setupAuthListeners() {
             currentUser = { name: nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1), email: email };
             showToast('Zalogowano pomyślnie!', 'success');
         }
-
 
         updateAuthUI();
         toggleAdminMode();
@@ -181,7 +178,6 @@ function setupAuthListeners() {
         isAdmin = false;
         currentUser = { name: name, email: email };
         
-
         updateAuthUI();
         toggleAdminMode();
         registerModal.classList.add('hidden');
@@ -199,7 +195,7 @@ function setupAuthListeners() {
         showToast('Wylogowano pomyślnie.', 'warning');
     });
 
-
+ 
     const profileModal = document.getElementById('profile-modal');
     document.getElementById('btn-profile').addEventListener('click', () => {
         if(currentUser) {
@@ -215,6 +211,7 @@ function setupAuthListeners() {
     });
 }
 
+
 function updateAuthUI() {
     const unauthControls = document.getElementById('unauth-controls');
     const authControls = document.getElementById('auth-controls');
@@ -223,19 +220,23 @@ function updateAuthUI() {
     if (!unauthControls || !authControls) return;
 
     if (currentUser) {
-
-        unauthControls.style.display = 'none';
+      
         unauthControls.classList.add('hidden');
+        unauthControls.style.display = 'none';
         
-        authControls.style.display = 'flex';
+    
         authControls.classList.remove('hidden');
+        authControls.style.display = 'flex';
         
         if(greeting) greeting.textContent = `Cześć, ${currentUser.name}!`;
     } else {
-        unauthControls.style.display = 'flex';
+      
         unauthControls.classList.remove('hidden');
-        authControls.style.display = 'none';
+        unauthControls.style.display = 'flex';
+        
+      
         authControls.classList.add('hidden');
+        authControls.style.display = 'none';
         
         if(greeting) greeting.textContent = '';
     }
