@@ -76,7 +76,10 @@
             </div>
             <div class="form-group">
                 <label>Hasło</label>
-                <input type="password" placeholder="Wprowadź swoje hasło" required>
+                <div style="position: relative;">
+                    <input type="password" placeholder="Wprowadź swoje hasło" required style="padding-right: 40px; width: 100%;">
+                    <button type="button" class="pwd-toggle-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; outline: none; padding: 0; user-select: none;" title="Przytrzymaj, aby pokazać">👁️</button>
+                </div>
             </div>
             <button type="submit" class="btn-submit btn-large">Zaloguj się</button>
             <p class="auth-switch">Nie masz konta? <span id="switch-to-register" class="link-text">Zarejestruj się</span></p>
@@ -102,7 +105,10 @@
             </div>
             <div class="form-group">
                 <label>Hasło</label>
-                <input type="password" placeholder="Utwórz silne hasło" required>
+                <div style="position: relative;">
+                    <input type="password" placeholder="Utwórz silne hasło" required style="padding-right: 40px; width: 100%;">
+                    <button type="button" class="pwd-toggle-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; outline: none; padding: 0; user-select: none;" title="Przytrzymaj, aby pokazać">👁️</button>
+                </div>
             </div>
             <button type="submit" class="btn-submit btn-large">Zarejestruj się</button>
             <p class="auth-switch">Masz już konto? <span id="switch-to-login" class="link-text">Zaloguj się</span></p>
