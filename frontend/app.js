@@ -209,11 +209,47 @@ function setupAuthListeners() {
 }
 
 function updateAuthUI() {
-    const btnLogin = document.getElementById('btn-login');
-    const btnRegister = document.getElementById('btn-register');
-    const unauthControls = document.getElementById('unauth-controls');
-    const authControls = document.getElementById('auth-controls');
-    const greeting = document.getElementById('user-greeting');
+    let btnLogin = document.getElementById('btn-login');
+    let btnRegister = document.getElementById('btn-register');
+    let unauthControls = document.getElementById('unauth-controls');
+    let authControls = document.getElementById('auth-controls');
+    let authButtonsContainer = document.querySelector('.auth-buttons');
+
+    if (!authControls && authButtonsContainer) {
+        const div = document.createElement('div');
+        div.id = 'auth-controls';
+        div.className = 'hidden';
+        div.style.display = 'none';
+        div.style.alignItems = 'center';
+        div.style.gap = '15px';
+        div.innerHTML = `
+            <span id="user-greeting" style="font-weight: 600; color: var(--primary-color);"></span>
+            <button id="btn-profile" class="btn-outline" style="padding: 6px 12px;">Profil</button>
+            <button id="btn-logout" class="btn-danger" style="padding: 6px 12px;">Wyloguj</button>
+        `;
+        authButtonsContainer.appendChild(div);
+        authControls = div;
+
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            currentUser = null;
+            isAdmin = false;
+            updateAuthUI();
+            toggleAdminMode();
+            showToast('Wylogowano pomyślnie.', 'warning');
+        });
+
+        document.getElementById('btn-profile').addEventListener('click', () => {
+            const profileModal = document.getElementById('profile-modal');
+            if(currentUser && profileModal) {
+                document.getElementById('profile-name-display').textContent = currentUser.name;
+                document.getElementById('profile-email-display').textContent = currentUser.email;
+                document.getElementById('profile-role-display').textContent = isAdmin ? 'Administrator' : 'Użytkownik';
+                profileModal.classList.remove('hidden');
+            }
+        });
+    }
+
+    let greeting = document.getElementById('user-greeting');
 
     if (currentUser) {
         if (btnLogin) btnLogin.style.display = 'none';
@@ -306,7 +342,7 @@ function setupBooksListeners() {
                 showToast('Książka została pomyślnie dodana!', 'success');
             } catch (err) {
                 console.error(err);
-                showToast('Nie udało się dodać książki!', 'error');
+                showToast('Nie удалось dodać książki!', 'error');
             }
         }
         resetForm();
