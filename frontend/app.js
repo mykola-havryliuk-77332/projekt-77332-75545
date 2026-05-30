@@ -110,11 +110,6 @@ function setupAuthListeners() {
     const registerModal = document.getElementById('register-modal');
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
-    const btnLogin = document.getElementById('btn-login');
-    const btnRegister = document.getElementById('btn-register');
-
-    if (btnLogin) btnLogin.addEventListener('click', () => loginModal.classList.remove('hidden'));
-    if (btnRegister) btnRegister.addEventListener('click', () => registerModal.classList.remove('hidden'));
     
     const closeLogin = document.getElementById('close-login-modal');
     const closeRegister = document.getElementById('close-register-modal');
@@ -153,10 +148,10 @@ function setupAuthListeners() {
                 currentUser = { name: nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1), email: email };
                 showToast('Zalogowano pomyślnie!', 'success');
             }
-            updateAuthUI();
-            toggleAdminMode();
             loginModal.classList.add('hidden');
             loginForm.reset();
+            updateAuthUI();
+            toggleAdminMode();
         });
     }
 
@@ -168,114 +163,83 @@ function setupAuthListeners() {
             const email = inputs[1].value;
             isAdmin = false;
             currentUser = { name: name, email: email };
-            updateAuthUI();
-            toggleAdminMode();
             registerModal.classList.add('hidden');
             registerForm.reset();
+            updateAuthUI();
+            toggleAdminMode();
             showToast('Konto utworzone. Zostałeś automatycznie zalogowany!', 'success');
         });
     }
 
-    const btnLogout = document.getElementById('btn-logout');
-    if (btnLogout) {
-        btnLogout.addEventListener('click', () => {
-            currentUser = null;
-            isAdmin = false;
-            updateAuthUI();
-            toggleAdminMode();
-            showToast('Wylogowano pomyślnie.', 'warning');
-        });
-    }
-
-    const btnProfile = document.getElementById('btn-profile');
+    const closeProfileModal = document.getElementById('close-profile-modal');
     const profileModal = document.getElementById('profile-modal');
-    
-    if (btnProfile && profileModal) {
-        btnProfile.addEventListener('click', () => {
-            if(currentUser) {
-                document.getElementById('profile-name-display').textContent = currentUser.name;
-                document.getElementById('profile-email-display').textContent = currentUser.email;
-                document.getElementById('profile-role-display').textContent = isAdmin ? 'Administrator' : 'Użytkownik';
-                profileModal.classList.remove('hidden');
-            }
+    if (closeProfileModal && profileModal) {
+        closeProfileModal.addEventListener('click', () => {
+            profileModal.classList.add('hidden');
         });
-        const closeProfileModal = document.getElementById('close-profile-modal');
-        if (closeProfileModal) {
-            closeProfileModal.addEventListener('click', () => {
-                profileModal.classList.add('hidden');
-            });
-        }
     }
 }
 
 function updateAuthUI() {
-    let btnLogin = document.getElementById('btn-login');
-    let btnRegister = document.getElementById('btn-register');
-    let unauthControls = document.getElementById('unauth-controls');
-    let authControls = document.getElementById('auth-controls');
-    let authButtonsContainer = document.querySelector('.auth-buttons');
-
-    if (!authControls && authButtonsContainer) {
-        const div = document.createElement('div');
-        div.id = 'auth-controls';
-        div.className = 'hidden';
-        div.style.display = 'none';
-        div.style.alignItems = 'center';
-        div.style.gap = '15px';
-        div.innerHTML = `
-            <span id="user-greeting" style="font-weight: 600; color: var(--primary-color);"></span>
-            <button id="btn-profile" class="btn-outline" style="padding: 6px 12px;">Profil</button>
-            <button id="btn-logout" class="btn-danger" style="padding: 6px 12px;">Wyloguj</button>
-        `;
-        authButtonsContainer.appendChild(div);
-        authControls = div;
-
-        document.getElementById('btn-logout').addEventListener('click', () => {
-            currentUser = null;
-            isAdmin = false;
-            updateAuthUI();
-            toggleAdminMode();
-            showToast('Wylogowano pomyślnie.', 'warning');
-        });
-
-        document.getElementById('btn-profile').addEventListener('click', () => {
-            const profileModal = document.getElementById('profile-modal');
-            if(currentUser && profileModal) {
-                document.getElementById('profile-name-display').textContent = currentUser.name;
-                document.getElementById('profile-email-display').textContent = currentUser.email;
-                document.getElementById('profile-role-display').textContent = isAdmin ? 'Administrator' : 'Użytkownik';
-                profileModal.classList.remove('hidden');
+    const authContainers = document.querySelectorAll('.auth-buttons');
+    
+    authContainers.forEach(container => {
+        Array.from(container.children).forEach(child => {
+            if (child.id !== 'theme-toggle') {
+                child.remove();
             }
         });
-    }
 
-    let greeting = document.getElementById('user-greeting');
+        if (currentUser) {
+            const authDiv = document.createElement('div');
+            authDiv.style.display = 'flex';
+            authDiv.style.alignItems = 'center';
+            authDiv.style.gap = '15px';
+            authDiv.innerHTML = `
+                <span style="font-weight: 600; color: var(--primary-color);">Cześć, ${currentUser.name}!</span>
+                <button id="dynamic-btn-profile" class="btn-outline" style="padding: 6px 12px;">Profil</button>
+                <button id="dynamic-btn-logout" class="btn-danger" style="padding: 6px 12px;">Wyloguj</button>
+            `;
+            container.appendChild(authDiv);
 
-    if (currentUser) {
-        if (btnLogin) btnLogin.style.display = 'none';
-        if (btnRegister) btnRegister.style.display = 'none';
-        if (unauthControls) {
-            unauthControls.style.display = 'none';
-            unauthControls.classList.add('hidden');
+            document.getElementById('dynamic-btn-logout').addEventListener('click', () => {
+                currentUser = null;
+                isAdmin = false;
+                updateAuthUI();
+                toggleAdminMode();
+                showToast('Wylogowano pomyślnie.', 'warning');
+            });
+
+            document.getElementById('dynamic-btn-profile').addEventListener('click', () => {
+                const profileModal = document.getElementById('profile-modal');
+                if(profileModal) {
+                    document.getElementById('profile-name-display').textContent = currentUser.name;
+                    document.getElementById('profile-email-display').textContent = currentUser.email;
+                    document.getElementById('profile-role-display').textContent = isAdmin ? 'Administrator' : 'Użytkownik';
+                    profileModal.classList.remove('hidden');
+                }
+            });
+        } else {
+            const unauthDiv = document.createElement('div');
+            unauthDiv.style.display = 'flex';
+            unauthDiv.style.gap = '10px';
+            unauthDiv.innerHTML = `
+                <button id="dynamic-btn-login" class="btn-outline">Zaloguj</button>
+                <button id="dynamic-btn-register" class="btn-primary">Zarejestruj</button>
+            `;
+            container.appendChild(unauthDiv);
+
+            document.getElementById('dynamic-btn-login').addEventListener('click', () => {
+                const loginModal = document.getElementById('login-modal');
+                if (loginModal) loginModal.classList.remove('hidden');
+            });
+
+            document.getElementById('dynamic-btn-register').addEventListener('click', () => {
+                const regModal = document.getElementById('register-modal');
+                if (regModal) regModal.classList.remove('hidden');
+            });
         }
-        if (authControls) {
-            authControls.style.display = 'flex';
-            authControls.classList.remove('hidden');
-        }
-        if (greeting) greeting.textContent = `Cześć, ${currentUser.name}!`;
-    } else {
-        if (btnLogin) btnLogin.style.display = 'inline-block';
-        if (btnRegister) btnRegister.style.display = 'inline-block';
-        if (unauthControls) {
-            unauthControls.style.display = 'flex';
-            unauthControls.classList.remove('hidden');
-        }
-        if (authControls) {
-            authControls.style.display = 'none';
-            authControls.classList.add('hidden');
-        }
-        if (greeting) greeting.textContent = '';
-    }
+    });
 }
 
 function toggleAdminMode() {
@@ -342,7 +306,7 @@ function setupBooksListeners() {
                 showToast('Książka została pomyślnie dodana!', 'success');
             } catch (err) {
                 console.error(err);
-                showToast('Nie удалось dodać książki!', 'error');
+                showToast('Nie udało się dodać książki!', 'error');
             }
         }
         resetForm();
