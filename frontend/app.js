@@ -33,7 +33,7 @@ async function initApp() {
     setupUIListeners();
     setupAuthForms();
     setupBooksListeners();
-    setupPasswordToggles(); // Додано виклик функції для паролів
+    setupPasswordToggles();
     updateAuthUI(); 
     toggleAdminMode();
     setupThemeToggle();
@@ -107,10 +107,10 @@ function resetForm() {
 }
 
 function setupUIListeners() {
-    document.getElementById('close-book-modal').addEventListener('click', () => {
-        document.getElementById('book-modal').classList.add('hidden');
+    document.getElementById('close-book-modal')?.addEventListener('click', () => {
+        document.getElementById('book-modal')?.classList.add('hidden');
     });
-    document.getElementById('cancel-edit-btn').addEventListener('click', resetForm);
+    document.getElementById('cancel-edit-btn')?.addEventListener('click', resetForm);
     window.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal') && !e.target.classList.contains('full-page-modal')) {
             e.target.classList.add('hidden');
@@ -118,7 +118,6 @@ function setupUIListeners() {
     });
 }
 
-// НОВА ФУНКЦІЯ ДЛЯ "ОКА" В ПАРОЛЯХ
 function setupPasswordToggles() {
     const toggleBtns = document.querySelectorAll('.pwd-toggle-btn');
     toggleBtns.forEach(btn => {
@@ -135,12 +134,9 @@ function setupPasswordToggles() {
             btn.style.opacity = '1';
         };
 
-        // Для комп'ютера (мишка)
         btn.addEventListener('mousedown', showPwd);
         btn.addEventListener('mouseup', hidePwd);
         btn.addEventListener('mouseleave', hidePwd);
-
-        // Для телефона (палець)
         btn.addEventListener('touchstart', showPwd, {passive: false});
         btn.addEventListener('touchend', hidePwd);
         btn.addEventListener('touchcancel', hidePwd);
@@ -325,7 +321,7 @@ function setupBooksListeners() {
                     showToast('Książka została pomyślnie dodana!', 'success');
                 } catch (err) {
                     console.error(err);
-                    showToast('Nie удалось dodać książki!', 'error');
+                    showToast('Nie udało się dodać książki!', 'error');
                 }
             }
             resetForm();
@@ -343,11 +339,55 @@ function setupBooksListeners() {
         });
     }
 
+    // ТУТ СПРАВЖНЯ ЛОГІКА ЗБЕРЕЖЕННЯ КОМЕНТАРЯ НА СЕРВЕР
     if (commentForm) {
-        commentForm.addEventListener('submit', (e) => {
+        commentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            e.target.reset(); 
-            showToast('Komentarz został dodany!', 'success');
+            
+            if (!currentBookId) return;
+
+            const bookIndex = books.findIndex(b => b.id == currentBookId);
+            if (bookIndex === -1) return;
+            
+            const bookToUpdate = { ...books[bookIndex] };
+            if (!bookToUpdate.comments) bookToUpdate.comments = [];
+
+            const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
+            const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
+            const textValue = document.getElementById('comment-text').value;
+            const authorName = currentUser ? currentUser.name : "Użytkownik";
+
+            bookToUpdate.comments.push({
+                author: authorName,
+                text: textValue,
+                rating: ratingValue
+            });
+
+            try {
+                const response = await fetch(`${API_URL}/${bookToUpdate.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookToUpdate)
+                });
+
+                if (!response.ok) throw new Error('Błąd serwera');
+
+                const res = await fetch(API_URL);
+                books = await res.json();
+                
+                renderBooks();
+                
+                const freshBook = books.find(b => b.id == currentBookId);
+                if (freshBook) {
+                    renderComments(freshBook.comments || []);
+                }
+
+                commentForm.reset(); 
+                showToast('Komentarz został zapisany!', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Błąd podczas zapisywania komentarza!', 'error');
+            }
         });
     }
 }
@@ -402,13 +442,24 @@ window.openModal = function(id) {
 
 function renderComments(comments) {
     const list = document.getElementById('comments-list');
-    if (!list || comments.length === 0) return;
-    list.innerHTML = comments.map(c => `
+    if (!list || comments.length === 0) {
+        if (list) list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Brak komentarzy. Bądź pierwszy!</p>';
+        return;
+    }
+    list.innerHTML = comments.map(c => {
+        let stars = "";
+        if (c.rating && !isNaN(c.rating)) stars = "⭐".repeat(Number(c.rating));
+        else if (typeof c.rating === 'string' && c.rating.includes('⭐')) stars = c.rating;
+        
+        return `
         <div class="comment">
-            <div class="comment-header"><strong>${c.author}</strong></div>
+            <div class="comment-header">
+                <strong>${c.author}</strong>
+                <span style="font-size: 0.8rem;">${stars}</span>
+            </div>
             <p>${c.text}</p>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 function setupThemeToggle() {
