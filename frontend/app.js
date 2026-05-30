@@ -33,6 +33,7 @@ async function initApp() {
     setupUIListeners();
     setupAuthForms();
     setupBooksListeners();
+    setupPasswordToggles(); // Додано виклик функції для паролів
     updateAuthUI(); 
     toggleAdminMode();
     setupThemeToggle();
@@ -114,6 +115,35 @@ function setupUIListeners() {
         if (e.target.classList.contains('modal') && !e.target.classList.contains('full-page-modal')) {
             e.target.classList.add('hidden');
         }
+    });
+}
+
+// НОВА ФУНКЦІЯ ДЛЯ "ОКА" В ПАРОЛЯХ
+function setupPasswordToggles() {
+    const toggleBtns = document.querySelectorAll('.pwd-toggle-btn');
+    toggleBtns.forEach(btn => {
+        const input = btn.previousElementSibling;
+        
+        const showPwd = (e) => {
+            if (e.cancelable) e.preventDefault(); 
+            input.type = 'text';
+            btn.style.opacity = '0.5';
+        };
+        
+        const hidePwd = () => {
+            input.type = 'password';
+            btn.style.opacity = '1';
+        };
+
+        // Для комп'ютера (мишка)
+        btn.addEventListener('mousedown', showPwd);
+        btn.addEventListener('mouseup', hidePwd);
+        btn.addEventListener('mouseleave', hidePwd);
+
+        // Для телефона (палець)
+        btn.addEventListener('touchstart', showPwd, {passive: false});
+        btn.addEventListener('touchend', hidePwd);
+        btn.addEventListener('touchcancel', hidePwd);
     });
 }
 
@@ -295,7 +325,7 @@ function setupBooksListeners() {
                     showToast('Książka została pomyślnie dodana!', 'success');
                 } catch (err) {
                     console.error(err);
-                    showToast('Nie udało się dodać książki!', 'error');
+                    showToast('Nie удалось dodać książki!', 'error');
                 }
             }
             resetForm();
