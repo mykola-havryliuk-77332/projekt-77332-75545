@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadComponent(elementId, filepath) {
-    const response = await fetch(filepath);
+    // Додаємо ?v=... щоб браузер не брав старі файли з кешу, а завжди вантажив нові
+    const response = await fetch(filepath + '?v=' + new Date().getTime());
     const html = await response.text();
     document.getElementById(elementId).innerHTML = html;
 }
@@ -205,18 +206,35 @@ function setupAuthListeners() {
     });
 }
 
+// Повністю оновлена функція перемикання кнопок шапки
 function updateAuthUI() {
     const unauthControls = document.getElementById('unauth-controls');
     const authControls = document.getElementById('auth-controls');
     const greeting = document.getElementById('user-greeting');
     
     if (currentUser) {
-        if(unauthControls) unauthControls.classList.add('hidden');
-        if(authControls) authControls.classList.remove('hidden');
+        // Ховаємо кнопки логіну
+        if(unauthControls) {
+            unauthControls.style.display = 'none';
+            unauthControls.classList.add('hidden');
+        }
+        // Показуємо профіль
+        if(authControls) {
+            authControls.style.display = 'flex';
+            authControls.classList.remove('hidden');
+        }
         if(greeting) greeting.textContent = `Cześć, ${currentUser.name}!`;
     } else {
-        if(unauthControls) unauthControls.classList.remove('hidden');
-        if(authControls) authControls.classList.add('hidden');
+        // Показуємо кнопки логіну
+        if(unauthControls) {
+            unauthControls.style.display = 'flex';
+            unauthControls.classList.remove('hidden');
+        }
+        // Ховаємо профіль
+        if(authControls) {
+            authControls.style.display = 'none';
+            authControls.classList.add('hidden');
+        }
         if(greeting) greeting.textContent = '';
     }
 }
