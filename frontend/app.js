@@ -164,42 +164,74 @@ function setupAuthForms() {
     });
 
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault(); 
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             const email = loginForm.querySelector('input[type="email"]').value;
-            if(email === 'admin@admin.com') {
-                isAdmin = true;
-                currentUser = { name: 'Administrator', email: email };
-                showToast('Zalogowano pomyślnie jako Administrator!', 'success');
-            } else {
-                isAdmin = false;
-                const nameFromEmail = email.split('@')[0];
-                currentUser = { name: nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1), email: email };
-                showToast('Zalogowano pomyślnie!', 'success');
+            const password = loginForm.querySelector('input[type="password"]').value;
+
+            try {
+                const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Якщо сервер відповів успіхом
+                    isAdmin = (data.role === 'ADMIN');
+                    currentUser = { name: data.fullName || email.split('@')[0], email: email };
+                    
+                    showToast('Zalogowano pomyślnie!', 'success');
+                    loginModal.classList.add('hidden');
+                    loginForm.reset();
+                    updateAuthUI();
+                    toggleAdminMode();
+                } else {
+                    // Якщо сервер відповів помилкою (наприклад, невірний пароль)
+                    showToast(data.message || 'Błędny e-mail lub hasło!', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Błąd połączenia z serwerem!', 'error');
             }
-            loginModal.classList.add('hidden');
-            loginForm.reset();
-            updateAuthUI();
-            toggleAdminMode();
         });
     }
 
     if (registerForm) {
-        registerForm.addEventListener('submit', (e) => {
-            e.preventDefault(); 
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
             const inputs = registerForm.querySelectorAll('input');
-            const name = inputs[0].value;
+            // Переконайся, що індекси [0], [1], [2] відповідають твоєму HTML (Ім'я, Email, Пароль)
+            const fullName = inputs[0].value;
             const email = inputs[1].value;
-            isAdmin = false;
-            currentUser = { name: name, email: email };
-            registerModal.classList.add('hidden');
-            registerForm.reset();
-            updateAuthUI();
-            toggleAdminMode();
-            showToast('Konto utworzone. Zostałeś automatycznie zalogowany!', 'success');
+            const password = inputs[2].value;
+
+            try {
+                const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullName, email, password })
+                });
+
+                if (response.ok) {
+                    showToast('Konto utworzone! Możesz się zalogować.', 'success');
+                    registerModal.classList.add('hidden');
+                    registerForm.reset();
+                    // Відкриваємо логін, щоб користувач одразу міг увійти
+                    document.getElementById('login-modal').classList.remove('hidden');
+                } else {
+                    const data = await response.json();
+                    showToast(data.message || 'Błąd rejestracji!', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Błąd połączenia z serwerem!', 'error');
+            }
         });
     }
-}
 
 function updateAuthUI() {
     const authContainer = document.querySelector('.auth-buttons');
