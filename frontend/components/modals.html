@@ -76,7 +76,10 @@
             </div>
             <div class="form-group">
                 <label>Hasło</label>
-                <input type="password" placeholder="Wprowadź swoje hasło" required>
+                <div style="position: relative;">
+                    <input type="password" placeholder="Wprowadź swoje hasło" required style="padding-right: 40px; width: 100%;">
+                    <button type="button" class="pwd-toggle-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; outline: none; padding: 0; user-select: none;" title="Przytrzymaj, aby pokazać">👁️</button>
+                </div>
             </div>
             <button type="submit" class="btn-submit btn-large">Zaloguj się</button>
             <p class="auth-switch">Nie masz konta? <span id="switch-to-register" class="link-text">Zarejestruj się</span></p>
@@ -102,10 +105,29 @@
             </div>
             <div class="form-group">
                 <label>Hasło</label>
-                <input type="password" placeholder="Utwórz silne hasło" required>
+                <div style="position: relative;">
+                    <input type="password" placeholder="Utwórz silne hasło" required style="padding-right: 40px; width: 100%;">
+                    <button type="button" class="pwd-toggle-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; outline: none; padding: 0; user-select: none;" title="Przytrzymaj, aby pokazać">👁️</button>
+                </div>
             </div>
             <button type="submit" class="btn-submit btn-large">Zarejestruj się</button>
             <p class="auth-switch">Masz już konto? <span id="switch-to-login" class="link-text">Zaloguj się</span></p>
         </form>
+    </div>
+</div>
+
+<div id="profile-modal" class="modal hidden">
+    <div class="modal-content small-modal">
+        <span id="close-profile-modal" class="close-btn">&times;</span>
+        <div class="auth-header" style="margin-bottom: 20px;">
+            <h2>Twój profil</h2>
+            <p>Informacje o Twoim koncie</p>
+        </div>
+        
+        <div style="background: var(--bg-color); padding: 15px; border-radius: 8px;">
+            <p style="margin-bottom: 8px;"><strong>Imię:</strong> <span id="profile-name-display" style="color: var(--primary-color);"></span></p>
+            <p style="margin-bottom: 8px;"><strong>Email:</strong> <span id="profile-email-display"></span></p>
+            <p><strong>Typ konta:</strong> <span id="profile-role-display"></span></p>
+        </div>
     </div>
 </div>
