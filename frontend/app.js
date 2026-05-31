@@ -205,9 +205,9 @@ function setupAuthForms() {
             
             const inputs = registerForm.querySelectorAll('input');
             // Переконайся, що індекси [0], [1], [2] відповідають твоєму HTML (Ім'я, Email, Пароль)
-            const fullName = inputs[0].value;
-            const email = inputs[1].value;
-            const password = inputs[2].value;
+            const fullName = registerForm.querySelector('input[name="fullName"]').value;
+            const email = registerForm.querySelector('input[name="email"]').value;
+            const password = registerForm.querySelector('input[name="password"]').value;
 
             try {
                 const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/register', {
@@ -232,6 +232,7 @@ function setupAuthForms() {
             }
         });
     }
+}
 
 function updateAuthUI() {
     const authContainer = document.querySelector('.auth-buttons');
@@ -267,7 +268,8 @@ function updateAuthUI() {
                 profileModal.classList.remove('hidden');
             }
         });
-    } else {
+    } 
+    else {
         const unauthDiv = document.createElement('div');
         unauthDiv.style.display = 'flex';
         unauthDiv.style.gap = '10px';
