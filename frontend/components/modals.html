@@ -1,133 +1,264 @@
 <div id="book-modal" class="modal hidden">
+
     <div class="modal-content large-modal">
+
         <span id="close-book-modal" class="close-btn">&times;</span>
+
         <div class="modal-layout">
+
             <div class="modal-cover-wrapper">
+
                 <img id="modal-cover" src="" alt="Cover" class="modal-cover-img">
+
                 <div id="modal-genre" class="badge modal-badge"></div>
+
             </div>
+
             <div class="modal-info">
+
                 <h2 id="modal-title"></h2>
+
                 <h3 id="modal-author"></h3>
+
                 <div class="divider"></div>
+
                 <p id="modal-description"></p>
 
+
+
                 <div class="divider"></div>
+
                 <div class="comments-section">
+
                     <h3>Komentarze i oceny</h3>
+
                     <div id="comments-list" class="comments-list"></div>
 
+
+
                     <div id="login-prompt-comments" class="login-prompt">
+
                         Zaloguj się, aby dodać komentarz i ocenę.
+
                     </div>
 
+
+
                     <form id="add-comment-form" class="hidden">
+
                         <div class="form-group">
+
                             <label>Twoja ocena:</label>
+
                             <div class="star-rating">
+
                                 <input type="radio" id="star5" name="rating" value="5" required />
+
                                 <label for="star5" title="5 gwiazdek">
+
                                     <svg viewBox="0 0 24 24" fill="currentColor" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+
                                 </label>
+
+
 
                                 <input type="radio" id="star4" name="rating" value="4" />
+
                                 <label for="star4" title="4 gwiazdki">
+
                                     <svg viewBox="0 0 24 24" fill="currentColor" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+
                                 </label>
+
+
 
                                 <input type="radio" id="star3" name="rating" value="3" />
+
                                 <label for="star3" title="3 gwiazdki">
+
                                     <svg viewBox="0 0 24 24" fill="currentColor" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+
                                 </label>
+
+
 
                                 <input type="radio" id="star2" name="rating" value="2" />
+
                                 <label for="star2" title="2 gwiazdki">
+
                                     <svg viewBox="0 0 24 24" fill="currentColor" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+
                                 </label>
+
+
 
                                 <input type="radio" id="star1" name="rating" value="1" />
+
                                 <label for="star1" title="1 gwiazdka">
+
                                     <svg viewBox="0 0 24 24" fill="currentColor" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+
                                 </label>
+
                             </div>
+
                         </div>
+
                         <div class="form-group">
+
                             <textarea id="comment-text" placeholder="Napisz co myślisz o tej książce..." required></textarea>
+
                         </div>
+
                         <button type="submit" class="btn-submit">Dodaj komentarz</button>
+
                     </form>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
+
+
 
 <div id="login-modal" class="modal hidden full-page-modal">
+
     <div class="modal-content auth-modal-content">
+
         <span id="close-login-modal" class="close-btn">&times;</span>
+
         <div class="auth-header">
+
             <h2>Witaj ponownie!</h2>
+
             <p>Zaloguj się, aby kontynuować</p>
+
         </div>
+
         <form id="login-form" class="auth-form">
+
             <div class="form-group">
+
                 <label>Adres e-mail</label>
-                <input type="email" placeholder="Wprowadź swój e-mail" required>
+
+                <input type="email" name="email" placeholder="Wprowadź swój e-mail" required>
+
             </div>
+
             <div class="form-group">
+
                 <label>Hasło</label>
+
                 <div style="position: relative;">
-                    <input type="password" placeholder="Wprowadź swoje hasło" required style="padding-right: 40px; width: 100%;">
+
+                    <input type="password" name="password" placeholder="Wprowadź swoje hasło" required style="padding-right: 40px; width: 100%;">
+
                     <button type="button" class="pwd-toggle-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; outline: none; padding: 0; user-select: none;" title="Przytrzymaj, aby pokazać">👁️</button>
+
                 </div>
+
             </div>
+
             <button type="submit" class="btn-submit btn-large">Zaloguj się</button>
+
             <p class="auth-switch">Nie masz konta? <span id="switch-to-register" class="link-text">Zarejestruj się</span></p>
+
         </form>
+
     </div>
+
 </div>
+
+
 
 <div id="register-modal" class="modal hidden full-page-modal">
+
     <div class="modal-content auth-modal-content">
+
         <span id="close-register-modal" class="close-btn">&times;</span>
+
         <div class="auth-header">
+
             <h2>Dołącz do nas</h2>
+
             <p>Utwórz konto w kilku prostych krokach</p>
+
         </div>
+
         <form id="register-form" class="auth-form">
+
             <div class="form-group">
+
                 <label>Imię i nazwisko</label>
-                <input type="text" placeholder="Jak się nazywasz?" required>
+
+                <input type="text" name="fullName" placeholder="Jak się nazywasz?" required>
+
             </div>
+
             <div class="form-group">
+
                 <label>Adres e-mail</label>
-                <input type="email" placeholder="Wprowadź swój e-mail" required>
+
+                <input type="email" name="email" placeholder="Wprowadź swój e-mail" required>
             </div>
+
             <div class="form-group">
+
                 <label>Hasło</label>
+
                 <div style="position: relative;">
-                    <input type="password" placeholder="Utwórz silne hasło" required style="padding-right: 40px; width: 100%;">
+
+                    <input type="password" name="password" placeholder="Utwórz silne hasło" required style="padding-right: 40px; width: 100%;">
+
                     <button type="button" class="pwd-toggle-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem; outline: none; padding: 0; user-select: none;" title="Przytrzymaj, aby pokazać">👁️</button>
+
                 </div>
+
             </div>
+
             <button type="submit" class="btn-submit btn-large">Zarejestruj się</button>
+
             <p class="auth-switch">Masz już konto? <span id="switch-to-login" class="link-text">Zaloguj się</span></p>
+
         </form>
+
     </div>
+
 </div>
 
+
+
 <div id="profile-modal" class="modal hidden">
+
     <div class="modal-content small-modal">
+
         <span id="close-profile-modal" class="close-btn">&times;</span>
+
         <div class="auth-header" style="margin-bottom: 20px;">
+
             <h2>Twój profil</h2>
+
             <p>Informacje o Twoim koncie</p>
+
         </div>
-        
+
+       
+
         <div style="background: var(--bg-color); padding: 15px; border-radius: 8px;">
+
             <p style="margin-bottom: 8px;"><strong>Imię:</strong> <span id="profile-name-display" style="color: var(--primary-color);"></span></p>
+
             <p style="margin-bottom: 8px;"><strong>Email:</strong> <span id="profile-email-display"></span></p>
+
             <p><strong>Typ konta:</strong> <span id="profile-role-display"></span></p>
+
         </div>
+
     </div>
+
 </div>
