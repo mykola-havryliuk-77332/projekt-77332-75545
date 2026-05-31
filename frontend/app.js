@@ -389,15 +389,15 @@ function setupBooksListeners() {
         // --- ВСТАВЛЯЙТЕ ОСЬ ЦЕЙ БЛОК ЗАМІСТЬ ТОГО, ЩО БУЛО В TRY ---
         try {
             // Зверніть увагу: ми міняємо URL на .../id/comments і метод на POST
-            const response = await fetch(`${API_URL}/${currentBookId}/comments`, {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    author: authorName,
-                    text: textValue,
-                    rating: ratingValue
-                })
-            });
+            // Поверніть такий варіант (використовуйте тільки URL/${currentBookId}):
+        const response = await fetch(`${API_URL}/${currentBookId}`, {
+        method: 'PUT',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('token') // Обов'язково додайте токен!
+    },
+    body: JSON.stringify(bookToUpdate) // Надсилаємо повний об'єкт книги
+});
 
             if (!response.ok) {
                 // Це виведе в консоль реальну помилку від сервера (наприклад, 404 або 500)
