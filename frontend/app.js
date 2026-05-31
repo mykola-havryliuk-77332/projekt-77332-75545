@@ -375,53 +375,53 @@ function setupBooksListeners() {
 
     // ТУТ СПРАВЖНЯ ЛОГІКА ЗБЕРЕЖЕННЯ КОМЕНТАРЯ НА СЕРВЕР
     if (commentForm) {
-        commentForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if (!currentBookId) return;
+    commentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!currentBookId) return;
 
-            const bookIndex = books.findIndex(b => b.id == currentBookId);
-            if (bookIndex === -1) return;
-            
-            const bookToUpdate = { ...books[bookIndex] };
-            if (!bookToUpdate.comments) bookToUpdate.comments = [];
+        // Збираємо дані
+        const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
+        const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
+        const textValue = document.getElementById('comment-text').value;
+        const authorName = currentUser ? currentUser.name : "Użytkownik";
 
-            const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
-            const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
-            const textValue = document.getElementById('comment-text').value;
-            const authorName = currentUser ? currentUser.name : "Użytkownik";
-
-            bookToUpdate.comments.push({
-                author: authorName,
-                text: textValue,
-                rating: ratingValue
+        // --- ВСТАВЛЯЙТЕ ОСЬ ЦЕЙ БЛОК ЗАМІСТЬ ТОГО, ЩО БУЛО В TRY ---
+        try {
+            // Зверніть увагу: ми міняємо URL на .../id/comments і метод на POST
+            const response = await fetch(`${API_URL}/${currentBookId}/comments`, {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    author: authorName,
+                    text: textValue,
+                    rating: ratingValue
+                })
             });
 
-            try {
-                const response = await fetch(`${API_URL}/${bookToUpdate.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bookToUpdate)
-                });
-
-                if (!response.ok) throw new Error('Błąd serwera');
-
-                const res = await fetch(API_URL);
-                books = await res.json();
-                
-                renderBooks();
-                
-                const freshBook = books.find(b => b.id == currentBookId);
-                if (freshBook) {
-                    renderComments(freshBook.comments || []);
-                }
-
-                commentForm.reset(); 
-                showToast('Komentarz został zapisany!', 'success');
-            } catch (err) {
-                console.error(err);
-                showToast('Błąd podczas zapisywania komentarza!', 'error');
+            if (!response.ok) {
+                // Це виведе в консоль реальну помилку від сервера (наприклад, 404 або 500)
+                const errDetails = await response.text();
+                console.error("Сервер відповів помилкою:", errDetails);
+                throw new Error('Błąd serwera');
             }
+
+            // Якщо все успішно, оновлюємо дані
+            const res = await fetch(API_URL);
+            books = await res.json();
+            renderBooks();
+            
+            const freshBook = books.find(b => b.id == currentBookId);
+            if (freshBook) {
+                renderComments(freshBook.comments || []);
+            }
+
+            commentForm.reset(); 
+            showToast('Komentarz został zapisany!', 'success');
+        } catch (err) {
+            console.error(err);
+            showToast('Błąd podczas zapisywania komentarza!', 'error');
+           }
         });
     }
 }
