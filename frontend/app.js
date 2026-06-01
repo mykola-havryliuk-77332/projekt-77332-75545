@@ -179,17 +179,14 @@ function setupAuthForms() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Якщо сервер відповів успіхом
                     isAdmin = (data.role === 'ADMIN');
                     currentUser = { name: data.fullName || email.split('@')[0], email: email };
-                    
                     showToast('Zalogowano pomyślnie!', 'success');
                     loginModal.classList.add('hidden');
                     loginForm.reset();
                     updateAuthUI();
                     toggleAdminMode();
                 } else {
-                    // Якщо сервер відповів помилкою (наприклад, невірний пароль)
                     showToast(data.message || 'Błędny e-mail lub hasło!', 'error');
                 }
             } catch (err) {
@@ -203,11 +200,9 @@ function setupAuthForms() {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const inputs = registerForm.querySelectorAll('input');
-            // Переконайся, що індекси [0], [1], [2] відповідають твоєму HTML (Ім'я, Email, Пароль)
-            const fullName = registerForm.querySelector('input[name="fullName"]').value;
-            const email = registerForm.querySelector('input[name="email"]').value;
-            const password = registerForm.querySelector('input[name="password"]').value;
+            const fullName = registerForm.querySelector('input[placeholder="Jak się nazywasz?"]').value;
+            const email = registerForm.querySelector('input[type="email"]').value;
+            const password = registerForm.querySelector('input[type="password"]').value;
 
             try {
                 const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/register', {
@@ -220,7 +215,6 @@ function setupAuthForms() {
                     showToast('Konto utworzone! Możesz się zalogować.', 'success');
                     registerModal.classList.add('hidden');
                     registerForm.reset();
-                    // Відкриваємо логін, щоб користувач одразу міг увійти
                     document.getElementById('login-modal').classList.remove('hidden');
                 } else {
                     const data = await response.json();
@@ -268,8 +262,7 @@ function updateAuthUI() {
                 profileModal.classList.remove('hidden');
             }
         });
-    } 
-    else {
+    } else {
         const unauthDiv = document.createElement('div');
         unauthDiv.style.display = 'flex';
         unauthDiv.style.gap = '10px';
@@ -373,55 +366,63 @@ function setupBooksListeners() {
         });
     }
 
-    // ТУТ СПРАВЖНЯ ЛОГІКА ЗБЕРЕЖЕННЯ КОМЕНТАРЯ НА СЕРВЕР
+    // ВІДНОВЛЕНА ПРАВИЛЬНА ЛОГІКА ЗБЕРЕЖЕННЯ КОМЕНТАРЯ НА СЕРВЕР
     if (commentForm) {
-    commentForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        if (!currentBookId) return;
-
-        // Збираємо дані
-        const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
-        const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
-        const textValue = document.getElementById('comment-text').value;
-        const authorName = currentUser ? currentUser.name : "Użytkownik";
-
-        // --- ВСТАВЛЯЙТЕ ОСЬ ЦЕЙ БЛОК ЗАМІСТЬ ТОГО, ЩО БУЛО В TRY ---
-        try {
-            // Зверніть увагу: ми міняємо URL на .../id/comments і метод на POST
-            // Поверніть такий варіант (використовуйте тільки URL/${currentBookId}):
-        const response = await fetch(`${API_URL}/${currentBookId}`, {
-        method: 'PUT',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('token') // Обов'язково додайте токен!
-    },
-    body: JSON.stringify(bookToUpdate) // Надсилаємо повний об'єкт книги
-});
-
-            if (!response.ok) {
-                // Це виведе в консоль реальну помилку від сервера (наприклад, 404 або 500)
-                const errDetails = await response.text();
-                console.error("Сервер відповів помилкою:", errDetails);
-                throw new Error('Błąd serwera');
-            }
-
-            // Якщо все успішно, оновлюємо дані
-            const res = await fetch(API_URL);
-            books = await res.json();
-            renderBooks();
+        commentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            const freshBook = books.find(b => b.id == currentBookId);
-            if (freshBook) {
-                renderComments(freshBook.comments || []);
-            }
+            if (!currentBookId) return;
 
-            commentForm.reset(); 
-            showToast('Komentarz został zapisany!', 'success');
-        } catch (err) {
-            console.error(err);
-            showToast('Błąd podczas zapisywania komentarza!', 'error');
-           }
+            // Знаходимо поточну книгу
+            const bookIndex = books.findIndex(b => b.id == currentBookId);
+            if (bookIndex === -1) return;
+            
+            // Копіюємо її дані та додаємо коментар
+            const bookToUpdate = { ...books[bookIndex] };
+            if (!bookToUpdate.comments) bookToUpdate.comments = [];
+
+            const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
+            const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
+            const textValue = document.getElementById('comment-text').value;
+            const authorName = currentUser ? currentUser.name : "Użytkownik";
+
+            bookToUpdate.comments.push({
+                author: authorName,
+                text: textValue,
+                rating: ratingValue
+            });
+
+            try {
+                // Відправляємо всю оновлену книгу на бекенд (БЕЗ Authorization токена, щоб уникнути CORS)
+                const response = await fetch(`${API_URL}/${bookToUpdate.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookToUpdate)
+                });
+
+                if (!response.ok) {
+                    const errDetails = await response.text();
+                    console.error("Сервер відповів помилкою:", errDetails);
+                    throw new Error('Błąd serwera');
+                }
+
+                // Якщо успішно - оновлюємо дані на сторінці
+                const res = await fetch(API_URL);
+                books = await res.json();
+                
+                renderBooks();
+                
+                const freshBook = books.find(b => b.id == currentBookId);
+                if (freshBook) {
+                    renderComments(freshBook.comments || []);
+                }
+
+                commentForm.reset(); 
+                showToast('Komentarz został zapisany!', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Błąd podczas zapisywania komentarza!', 'error');
+            }
         });
     }
 }
