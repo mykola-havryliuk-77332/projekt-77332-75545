@@ -179,6 +179,9 @@ function setupAuthForms() {
                 const data = await response.json();
 
                 if (response.ok) {
+                    // ЗБЕРІГАЄМО ТОКЕН ДЛЯ ВІДПРАВКИ КОМЕНТАРІВ!
+                    if (data.token) localStorage.setItem('token', data.token);
+
                     isAdmin = (data.role === 'ADMIN');
                     currentUser = { name: data.fullName || email.split('@')[0], email: email };
                     showToast('Zalogowano pomyślnie!', 'success');
@@ -200,9 +203,10 @@ function setupAuthForms() {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const fullName = registerForm.querySelector('input[placeholder="Jak się nazywasz?"]').value;
-            const email = registerForm.querySelector('input[type="email"]').value;
-            const password = registerForm.querySelector('input[type="password"]').value;
+            const inputs = registerForm.querySelectorAll('input');
+            const fullName = inputs[0].value;
+            const email = inputs[1].value;
+            const password = inputs[2].value;
 
             try {
                 const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/register', {
@@ -212,10 +216,11 @@ function setupAuthForms() {
                 });
 
                 if (response.ok) {
-                    showToast('Konto utworzone! Możesz się zalogować.', 'success');
+                    showToast('Konto utworzone! Zaloguj się, aby kontynuować.', 'success');
                     registerModal.classList.add('hidden');
                     registerForm.reset();
-                    document.getElementById('login-modal').classList.remove('hidden');
+                    // Відкриваємо логін, щоб юзер отримав токен
+                    loginModal.classList.remove('hidden');
                 } else {
                     const data = await response.json();
                     showToast(data.message || 'Błąd rejestracji!', 'error');
@@ -249,6 +254,7 @@ function updateAuthUI() {
         document.getElementById('dynamic-btn-logout').addEventListener('click', () => {
             currentUser = null;
             isAdmin = false;
+            localStorage.removeItem('token'); // Очищаємо токен при виході
             updateAuthUI();
             toggleAdminMode();
             showToast('Wylogowano pomyślnie.', 'warning');
@@ -320,11 +326,15 @@ function setupBooksListeners() {
                 pages: 150
             };
 
+            const headers = { 'Content-Type': 'application/json' };
+            const token = localStorage.getItem('token');
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+
             if (id) {
                 try {
                     await fetch(`${API_URL}/${id}`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: headers,
                         body: JSON.stringify(bookData)
                     });
                     const res = await fetch(API_URL);
@@ -339,7 +349,7 @@ function setupBooksListeners() {
                 try {
                     await fetch(API_URL, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: headers,
                         body: JSON.stringify(bookData)
                     });
                     const res = await fetch(API_URL);
@@ -366,25 +376,27 @@ function setupBooksListeners() {
         });
     }
 
-    // ВІДНОВЛЕНА ПРАВИЛЬНА ЛОГІКА ЗБЕРЕЖЕННЯ КОМЕНТАРЯ НА СЕРВЕР
+    // ТУТ СПРАВЖНЯ ЛОГІКА ЗБЕРЕЖЕННЯ КОМЕНТАРЯ ІЗ ТОКЕНОМ
     if (commentForm) {
         commentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             if (!currentBookId) return;
 
-            // Знаходимо поточну книгу
+            const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
+            if (!ratingInput) {
+                showToast('Wybierz ocenę (gwiazdki)!', 'warning');
+                return;
+            }
+            const ratingValue = Number(ratingInput.value);
+            const textValue = document.getElementById('comment-text').value;
+            const authorName = currentUser ? currentUser.name : "Użytkownik";
+
             const bookIndex = books.findIndex(b => b.id == currentBookId);
             if (bookIndex === -1) return;
             
-            // Копіюємо її дані та додаємо коментар
             const bookToUpdate = { ...books[bookIndex] };
             if (!bookToUpdate.comments) bookToUpdate.comments = [];
-
-            const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
-            const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
-            const textValue = document.getElementById('comment-text').value;
-            const authorName = currentUser ? currentUser.name : "Użytkownik";
 
             bookToUpdate.comments.push({
                 author: authorName,
@@ -393,20 +405,24 @@ function setupBooksListeners() {
             });
 
             try {
-                // Відправляємо всю оновлену книгу на бекенд (БЕЗ Authorization токена, щоб уникнути CORS)
-                const response = await fetch(`${API_URL}/${bookToUpdate.id}`, {
+                const headers = { 'Content-Type': 'application/json' };
+                const token = localStorage.getItem('token');
+                
+                // ВАЖЛИВО: Відправляємо токен бекенду, щоб він дозволив зберегти коментар
+                if (token) {
+                    headers['Authorization'] = 'Bearer ' + token;
+                }
+
+                const response = await fetch(`${API_URL}/${currentBookId}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify(bookToUpdate)
                 });
 
                 if (!response.ok) {
-                    const errDetails = await response.text();
-                    console.error("Сервер відповів помилкою:", errDetails);
-                    throw new Error('Błąd serwera');
+                    throw new Error('Błąd serwera. Status: ' + response.status);
                 }
 
-                // Якщо успішно - оновлюємо дані на сторінці
                 const res = await fetch(API_URL);
                 books = await res.json();
                 
@@ -420,8 +436,8 @@ function setupBooksListeners() {
                 commentForm.reset(); 
                 showToast('Komentarz został zapisany!', 'success');
             } catch (err) {
-                console.error(err);
-                showToast('Błąd podczas zapisywania komentarza!', 'error');
+                console.error("Błąd zapisu:", err);
+                showToast('Błąd podczas zapisywania komentarza! Zaloguj się ponownie.', 'error');
             }
         });
     }
@@ -430,8 +446,13 @@ function setupBooksListeners() {
 window.deleteBook = async function(id) {
     if (confirm('Czy na pewno chcesz usunąć tę książkę z katalogu?')) {
         try {
+            const headers = {};
+            const token = localStorage.getItem('token');
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+
             await fetch(`${API_URL}/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: headers
             });
             const res = await fetch(API_URL);
             books = await res.json();
