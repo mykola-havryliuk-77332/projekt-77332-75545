@@ -401,31 +401,36 @@ function setupBooksListeners() {
             ]
         };
 
-        // 4. Відправляємо на ПРАВИЛЬНУ адресу (зазвичай це PUT на саму книгу)
+        
+
         try {
-            const response = await fetch(`${API_URL}/${currentBookId}`, {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                },
-                body: JSON.stringify(updatedBook)
-            });
+    // Спробуйте змінити метод на POST та додати /comments
+    const response = await fetch(`${API_URL}/${currentBookId}/comments`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({
+            author: authorName,
+            text: textValue,
+            rating: ratingValue
+        })
+    });
 
-            if (!response.ok) throw new Error(`Помилка сервера: ${response.status}`);
+    if (!response.ok) {
+        // Додаємо детальніший вивід помилки
+        const errorData = await response.text();
+        console.error("Помилка від сервера:", errorData);
+        throw new Error(`Помилка сервера: ${response.status}`);
+    }
 
-            // Оновлюємо список книг після успіху
-            const res = await fetch(API_URL);
-            books = await res.json();
-            renderBooks();
-            renderComments(updatedBook.comments); // Оновлюємо модалку
-
-            commentForm.reset(); 
-            showToast('Komentarz został zapisany!', 'success');
-        } catch (err) {
-            console.error(err);
-            showToast('Błąd zapisu! Sprawdź konsolę (F12).', 'error');
-        }
+    // ... далі ваш код успішного оновлення UI
+    } 
+    catch (err) {
+    console.error(err);
+    showToast('Błąd podczas pisania komentarza!', 'error');
+       }
     });
   }
 }
