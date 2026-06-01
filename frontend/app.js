@@ -394,15 +394,15 @@ function setupBooksListeners() {
         };
 
         try {
-            // 3. Виправляємо URL: прибираємо /books/ з середини
-            const response = await fetch(`${API_URL}/comments`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                },
-                body: JSON.stringify(commentData)
-            });
+            // Замініть ваш fetch на цей (тут ми вручну вказуємо правильний шлях до API)
+        const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/comments', {
+        method: 'POST',
+        headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+    },
+    body: JSON.stringify(commentData)
+}); 
 
             if (!response.ok) {
                 const errorData = await response.text();
@@ -413,15 +413,16 @@ function setupBooksListeners() {
             commentForm.reset(); 
             showToast('Komentarz zapisany!', 'success');
             
-            // Оновлюємо список
-            const res = await fetch(`${API_URL}/books`);
+           
+            // Оновлюємо список книг, використовуючи правильний шлях до API
+            const res = await fetch('https://projekt-77332-75545-production.up.railway.app/api/books');
             books = await res.json();
             renderBooks();
             renderComments(books.find(b => b.id == currentBookId)?.comments || []);
 
         } catch (err) {
             console.error(err);
-            showToast('Błąd zapisu! Sprawdź konsolę (F12).', 'error');
+            showToast('Błąd zapisu!', 'error');
         }
     });
 }
