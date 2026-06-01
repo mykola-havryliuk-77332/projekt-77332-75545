@@ -378,57 +378,51 @@ function setupBooksListeners() {
         
         if (!currentBookId) return;
 
-        // 1. Знаходимо книгу прямо тут, щоб уникнути ReferenceError
-        const bookToUpdate = books.find(b => b.id == currentBookId);
-        if (!bookToUpdate) return;
-
-        // 2. Визначаємо authorName тут, щоб уникнути помилки
+        // Збираємо дані
         const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
         const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
         const textValue = document.getElementById('comment-text').value;
         const authorName = (typeof currentUser !== 'undefined' && currentUser.name) ? currentUser.name : "Użytkownik";
 
-        // 3. Формуємо об'єкт для відправки
-        // Збираємо дані з урахуванням того, що серверу потрібен bookId
+        // Структура об'єкта, яку очікує ваш Java-код:
         const commentData = {
-    bookId: currentBookId, // <--- ЦЕ КРИТИЧНО ВАЖЛИВО
-    author: authorName,
-    text: textValue,
-    rating: ratingValue
-};
+            bookId: Number(currentBookId), // Важливо: передаємо ID книги, бо сервер це перевіряє
+            author: authorName,
+            text: textValue,
+            rating: ratingValue
+        };
 
-try {
-    // ВІДПРАВЛЯЄМО НА /api/comments
-    const response = await fetch(`${API_URL}/comments`, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('token')
-        },
-        body: JSON.stringify(commentData)
-    });
+        try {
+            // Відправляємо POST запит на /api/comments
+            const response = await fetch(`${API_URL}/comments`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: JSON.stringify(commentData)
+            });
 
-    if (!response.ok) {
-        const err = await response.text();
-        console.error("Помилка:", err);
-        throw new Error("Помилка сервера");
-    }
+            if (!response.ok) {
+                const errorData = await response.text();
+                console.error("Помилка від сервера:", errorData);
+                throw new Error("Не вдалося зберегти коментар");
+            }
 
-    // Оновлюємо інтерфейс
-    const res = await fetch(`${API_URL}/books`); // Отримуємо актуальний список
-    books = await res.json();
-    renderBooks();
-    
-    // Знаходимо оновлену книгу і показуємо коментарі
-    const freshBook = books.find(b => b.id == currentBookId);
-    if (freshBook) renderComments(freshBook.comments || []);
+            // Успіх: очищуємо форму та оновлюємо список
+            commentForm.reset(); 
+            showToast('Komentarz został zapisany!', 'success');
+            
+            // Після додавання оновлюємо дані на сторінці
+            const res = await fetch(`${API_URL}/books`);
+            books = await res.json();
+            renderBooks();
+            renderComments(books.find(b => b.id == currentBookId)?.comments || []);
 
-    commentForm.reset(); 
-    showToast('Komentarz zapisany!', 'success');
-    } catch (err) {
-    console.error(err);
-    showToast('Błąd zapisu!', 'error');
-    }
+        } catch (err) {
+            console.error(err);
+            showToast('Błąd zapisu!', 'error');
+        }
     });
   }
 }
