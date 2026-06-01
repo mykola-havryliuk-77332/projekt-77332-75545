@@ -23,22 +23,12 @@ async function loadComponent(elementId, filepath) {
 }
 
 async function initApp() {
-    const adminSection = document.getElementById('admin-section');
-    if (adminSection) adminSection.style.display = 'none';
-    const mainContent = document.querySelector('.main-content');
-    if (mainContent) mainContent.style.gridTemplateColumns = '1fr';
-
-    setupThemeToggle();
-
     try {
-        renderSkeletons(8);
-
         const response = await fetch(API_URL);
         books = await response.json();
     } catch (err) {
         console.error(err);
     }
-    
     renderBooks();
     setupUIListeners();
     setupAuthForms();
@@ -46,6 +36,7 @@ async function initApp() {
     setupPasswordToggles();
     updateAuthUI(); 
     toggleAdminMode();
+    setupThemeToggle();
 }
 
 function showToast(message, type = 'success') {
@@ -171,7 +162,7 @@ function setupAuthForms() {
         registerModal.classList.add('hidden');
         loginModal.classList.remove('hidden');
     });
-
+    
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -188,10 +179,9 @@ function setupAuthForms() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    if (data.token) localStorage.setItem('token', data.token);
-
                     isAdmin = (data.role === 'ADMIN');
                     currentUser = { name: data.fullName || email.split('@')[0], email: email };
+                    
                     showToast('Zalogowano pomyślnie!', 'success');
                     loginModal.classList.add('hidden');
                     loginForm.reset();
@@ -211,10 +201,9 @@ function setupAuthForms() {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const inputs = registerForm.querySelectorAll('input');
-            const fullName = inputs[0].value;
-            const email = inputs[1].value;
-            const password = inputs[2].value;
+            const fullName = registerForm.querySelector('input[name="fullName"]').value;
+            const email = registerForm.querySelector('input[name="email"]').value;
+            const password = registerForm.querySelector('input[name="password"]').value;
 
             try {
                 const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/register', {
@@ -224,7 +213,7 @@ function setupAuthForms() {
                 });
 
                 if (response.ok) {
-                    showToast('Konto utworzone! Zaloguj się, aby kontynuować.', 'success');
+                    showToast('Konto utworzone! Możesz się zalogować.', 'success');
                     registerModal.classList.add('hidden');
                     registerForm.reset();
                     document.getElementById('login-modal').classList.remove('hidden');
@@ -262,11 +251,11 @@ function updateAuthUI() {
         document.getElementById('dynamic-btn-logout').addEventListener('click', () => {
             currentUser = null;
             isAdmin = false;
-            localStorage.removeItem('token'); 
             updateAuthUI();
             toggleAdminMode();
             showToast('Wylogowano pomyślnie.', 'warning');
         });
+        
         document.getElementById('dynamic-btn-profile').addEventListener('click', () => {
             const profileModal = document.getElementById('profile-modal');
             if (profileModal) {
@@ -290,6 +279,7 @@ function updateAuthUI() {
             const loginModal = document.getElementById('login-modal');
             if (loginModal) loginModal.classList.remove('hidden');
         });
+        
         document.getElementById('dynamic-btn-register').addEventListener('click', () => {
             const regModal = document.getElementById('register-modal');
             if (regModal) regModal.classList.remove('hidden');
@@ -300,6 +290,7 @@ function updateAuthUI() {
 function toggleAdminMode() {
     const adminSection = document.getElementById('admin-section');
     if (adminSection) adminSection.style.display = isAdmin ? 'block' : 'none';
+    
     const commentForm = document.getElementById('add-comment-form');
     const loginPrompt = document.getElementById('login-prompt-comments');
     if (commentForm && loginPrompt) {
@@ -321,7 +312,7 @@ function setupBooksListeners() {
     const bookForm = document.getElementById('add-book-form');
     const searchInput = document.getElementById('search-input');
     const commentForm = document.getElementById('add-comment-form');
-    
+
     if (bookForm) {
         bookForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -335,15 +326,11 @@ function setupBooksListeners() {
                 pages: 150
             };
 
-            const headers = { 'Content-Type': 'application/json' };
-            const token = localStorage.getItem('token');
-            if (token) headers['Authorization'] = 'Bearer ' + token;
-
             if (id) {
                 try {
                     await fetch(`${API_URL}/${id}`, {
                         method: 'PUT',
-                        headers: headers,
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(bookData)
                     });
                     const res = await fetch(API_URL);
@@ -358,7 +345,7 @@ function setupBooksListeners() {
                 try {
                     await fetch(API_URL, {
                         method: 'POST',
-                        headers: headers,
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(bookData)
                     });
                     const res = await fetch(API_URL);
@@ -386,71 +373,66 @@ function setupBooksListeners() {
     }
 
     if (commentForm) {
-        commentForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+    commentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!currentBookId) return;
+
+        // 1. Правильно визначаємо змінні всередині функції
+        const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
+        const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
+        const textValue = document.getElementById('comment-text').value;
+        // Визначаємо автора, щоб не було ReferenceError
+        const authorName = (typeof currentUser !== 'undefined' && currentUser.name) ? currentUser.name : "Użytkownik";
+
+        // 2. Формуємо об'єкт для відправки згідно з вимогами вашого Java-контролера
+        const commentData = {
+            bookId: Number(currentBookId), // Потрібно для перевірки в Java-коді
+            author: authorName,
+            text: textValue,
+            rating: ratingValue
+        };
+
+        try {
+            // Замініть ваш fetch на цей (тут ми вручну вказуємо правильний шлях до API)
+        const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/comments', {
+        method: 'POST',
+        headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+    },
+    body: JSON.stringify(commentData)
+}); 
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(errorData || "Помилка сервера");
+            }
+
+            // 4. Успіх
+            commentForm.reset(); 
+            showToast('Komentarz zapisany!', 'success');
             
-            if (!currentBookId) return;
+           
+            // Оновлюємо список книг, використовуючи правильний шлях до API
+            const res = await fetch('https://projekt-77332-75545-production.up.railway.app/api/books');
+            books = await res.json();
+            renderBooks();
+            renderComments(books.find(b => b.id == currentBookId)?.comments || []);
 
-            const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
-            if (!ratingInput) {
-                showToast('Wybierz ocenę (gwiazdki)!', 'warning');
-                return;
-            }
-            const ratingValue = Number(ratingInput.value);
-            const textValue = document.getElementById('comment-text').value;
-            const authorName = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.name : "Użytkownik";
-
-            const commentData = {
-                bookId: Number(currentBookId), 
-                author: authorName,
-                text: textValue,
-                rating: ratingValue
-            };
-
-            try {
-                const headers = { 'Content-Type': 'application/json' };
-                const token = localStorage.getItem('token');
-                
-                if (token) {
-                    headers['Authorization'] = 'Bearer ' + token;
-                }
-
-                const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/comments', {
-                    method: 'POST',
-                    headers: headers,
-                    body: JSON.stringify(commentData)
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.text();
-                    throw new Error(errorData || "Помилка сервера");
-                }
-
-                commentForm.reset();
-                showToast('Komentarz zapisany!', 'success');
-                
-                const res = await fetch('https://projekt-77332-75545-production.up.railway.app/api/books');
-                books = await res.json();
-                renderBooks();
-                renderComments(books.find(b => b.id == currentBookId)?.comments || []);
-            } catch (err) {
-                console.error(err);
-                showToast('Błąd zapisu!', 'error');
-            }
-        });
-    }
+        } catch (err) {
+            console.error(err);
+            showToast('Błąd zapisu!', 'error');
+        }
+    });
+}
 }
 
 window.deleteBook = async function(id) {
     if (confirm('Czy na pewno chcesz usunąć tę książkę z katalogu?')) {
         try {
-            const headers = {};
-            const token = localStorage.getItem('token');
-            if (token) headers['Authorization'] = 'Bearer ' + token;
-
             await fetch(`${API_URL}/${id}`, {
-                method: 'DELETE',
-                headers: headers
+                method: 'DELETE'
             });
             const res = await fetch(API_URL);
             books = await res.json();
@@ -521,15 +503,8 @@ function setupThemeToggle() {
     if (!themeBtn) return;
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
-    } else {
-        document.body.classList.remove('dark-mode');
     }
-    
-    
-    const newBtn = themeBtn.cloneNode(true);
-    themeBtn.parentNode.replaceChild(newBtn, themeBtn);
-    
-    newBtn.addEventListener('click', () => {
+    themeBtn.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
         if (document.body.classList.contains('dark-mode')) {
             localStorage.setItem('theme', 'dark');
@@ -537,25 +512,4 @@ function setupThemeToggle() {
             localStorage.setItem('theme', 'light');
         }
     });
-}
-
-function renderSkeletons(count = 8) {
-    const booksContainer = document.getElementById('books-container');
-    if (!booksContainer) return;
-    booksContainer.innerHTML = '';
-    
-    for (let i = 0; i < count; i++) {
-        const skeleton = document.createElement('div');
-        skeleton.className = 'skeleton-card';
-        skeleton.innerHTML = `
-            <div class="skeleton-cover"></div>
-            <div class="skeleton-content">
-                <div class="skeleton-badge"></div>
-                <div class="skeleton-title"></div>
-                <div class="skeleton-author"></div>
-                <div class="skeleton-rating"></div>
-            </div>
-        `;
-        booksContainer.appendChild(skeleton);
-    }
 }
