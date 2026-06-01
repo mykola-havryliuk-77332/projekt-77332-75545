@@ -376,68 +376,58 @@ function setupBooksListeners() {
     commentForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        if (!currentBookId) return;
-
-        const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
-        const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
-        const textValue = document.getElementById('comment-text').value;
-        const authorName = currentUser ? currentUser.name : "Użytkownik";
-
-        // Додаємо базову валідацію
-        if (ratingValue === 0) {
-            showToast('Wybierz ocenę!', 'error');
+        // 1. Отримуємо актуальну книгу з глобального масиву 'books'
+        const bookToUpdate = books.find(b => b.id == currentBookId);
+        
+        if (!bookToUpdate) {
+            console.error("Помилка: Книгу не знайдено в списку!");
             return;
         }
 
-        const commentData = {
-            rating: ratingValue,
-            text: textValue,
-            author: authorName
+        // 2. Збираємо дані
+        const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
+        const textValue = document.getElementById('comment-text').value;
+
+        // 3. Формуємо правильний об'єкт (копія книги + новий коментар)
+        const updatedBook = { 
+            ...bookToUpdate,
+            comments: [
+                ...(bookToUpdate.comments || []),
+                {
+                    author: currentUser ? currentUser.name : "Użytkownik",
+                    text: textValue,
+                    rating: ratingInput ? Number(ratingInput.value) : 0
+                }
+            ]
         };
 
+        // 4. Відправляємо на ПРАВИЛЬНУ адресу (зазвичай це PUT на саму книгу)
         try {
-            // ВАЖЛИВО: додаємо Authorization header
-            const response = await fetch(`${API_URL}/${currentBookId}/comments`, {
-                method: 'POST',
+            const response = await fetch(`${API_URL}/${currentBookId}`, {
+                method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token') 
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
                 },
-                body: JSON.stringify(commentData)
+                body: JSON.stringify(updatedBook)
             });
 
-            if (!response.ok) {
-                // Якщо 401 - токен недійсний
-                if (response.status === 401) {
-                    showToast('Musisz być zalogowany!', 'error');
-                } else {
-                    const errDetails = await response.text();
-                    console.error("Помилка сервера:", errDetails);
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return;
-            }
+            if (!response.ok) throw new Error(`Помилка сервера: ${response.status}`);
 
-            // Оновлення списку
+            // Оновлюємо список книг після успіху
             const res = await fetch(API_URL);
             books = await res.json();
             renderBooks();
-            
-            const freshBook = books.find(b => b.id == currentBookId);
-            if (freshBook) {
-                renderComments(freshBook.comments || []);
-            }
+            renderComments(updatedBook.comments); // Оновлюємо модалку
 
             commentForm.reset(); 
             showToast('Komentarz został zapisany!', 'success');
-
         } catch (err) {
             console.error(err);
-            showToast('Błąd podczas zapisywania komentarza!', 'error');
-        
+            showToast('Błąd zapisu! Sprawdź konsolę (F12).', 'error');
         }
     });
-    }
+  }
 }
 
 window.deleteBook = async function(id) {
