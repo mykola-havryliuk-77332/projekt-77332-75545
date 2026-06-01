@@ -373,54 +373,70 @@ function setupBooksListeners() {
     }
 
     if (commentForm) {
-        commentForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            if (!currentBookId) return;
+    commentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!currentBookId) return;
 
-            const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
-            const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
-            const textValue = document.getElementById('comment-text').value;
-            const authorName = currentUser ? currentUser.name : "Użytkownik";
+        const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
+        const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
+        const textValue = document.getElementById('comment-text').value;
+        const authorName = currentUser ? currentUser.name : "Użytkownik";
 
-            const commentData = {
-                rating: ratingValue,
-                text: textValue,
-                author: authorName
-            };
+        // Додаємо базову валідацію
+        if (ratingValue === 0) {
+            showToast('Wybierz ocenę!', 'error');
+            return;
+        }
 
-            try {
-                const response = await fetch(`${API_URL}/${currentBookId}/comments`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(commentData)
-                });
+        const commentData = {
+            rating: ratingValue,
+            text: textValue,
+            author: authorName
+        };
 
-                if (!response.ok) {
+        try {
+            // ВАЖЛИВО: додаємо Authorization header
+            const response = await fetch(`${API_URL}/${currentBookId}/comments`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token') 
+                },
+                body: JSON.stringify(commentData)
+            });
+
+            if (!response.ok) {
+                // Якщо 401 - токен недійсний
+                if (response.status === 401) {
+                    showToast('Musisz być zalogowany!', 'error');
+                } else {
                     const errDetails = await response.text();
-                    console.error(errDetails);
+                    console.error("Помилка сервера:", errDetails);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-
-                const res = await fetch(API_URL);
-                books = await res.json();
-                renderBooks();
-                
-                const freshBook = books.find(b => b.id == currentBookId);
-                if (freshBook) {
-                    renderComments(freshBook.comments || []);
-                }
-
-                commentForm.reset(); 
-                showToast('Komentarz został zapisany!', 'success');
-
-            } catch (err) {
-                console.error(err);
-                showToast('Błąd podczas zapisywania komentarza!', 'error');
+                return;
             }
-        });
+
+            // Оновлення списку
+            const res = await fetch(API_URL);
+            books = await res.json();
+            renderBooks();
+            
+            const freshBook = books.find(b => b.id == currentBookId);
+            if (freshBook) {
+                renderComments(freshBook.comments || []);
+            }
+
+            commentForm.reset(); 
+            showToast('Komentarz został zapisany!', 'success');
+
+        } catch (err) {
+            console.error(err);
+            showToast('Błąd podczas zapisywania komentarza!', 'error');
+        
+        }
+    });
     }
 }
 
