@@ -389,42 +389,46 @@ function setupBooksListeners() {
         const authorName = (typeof currentUser !== 'undefined' && currentUser.name) ? currentUser.name : "Użytkownik";
 
         // 3. Формуємо об'єкт для відправки
+        // Збираємо дані з урахуванням того, що серверу потрібен bookId
         const commentData = {
-            author: authorName,
-            text: textValue,
-            rating: ratingValue
-        };
+    bookId: currentBookId, // <--- ЦЕ КРИТИЧНО ВАЖЛИВО
+    author: authorName,
+    text: textValue,
+    rating: ratingValue
+};
 
+try {
+    // ВІДПРАВЛЯЄМО НА /api/comments
+    const response = await fetch(`${API_URL}/comments`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify(commentData)
+    });
 
-        try {
-            // 4. Спробуємо POST на адресу /comments (оскільки PUT повертає 405)
-            const response = await fetch(`${API_URL}/${currentBookId}/comments`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                },
-                body: JSON.stringify(commentData)
-            });
+    if (!response.ok) {
+        const err = await response.text();
+        console.error("Помилка:", err);
+        throw new Error("Помилка сервера");
+    }
 
-            if (!response.ok) {
-                const err = await response.text();
-                console.error("Сервер каже:", err);
-                throw new Error("Не вдалося зберегти коментар");
-            }
+    // Оновлюємо інтерфейс
+    const res = await fetch(`${API_URL}/books`); // Отримуємо актуальний список
+    books = await res.json();
+    renderBooks();
+    
+    // Знаходимо оновлену книгу і показуємо коментарі
+    const freshBook = books.find(b => b.id == currentBookId);
+    if (freshBook) renderComments(freshBook.comments || []);
 
-            // Оновлюємо список
-            const res = await fetch(API_URL);
-            books = await res.json();
-            renderBooks();
-            renderComments(books.find(b => b.id == currentBookId)?.comments || []);
-
-            commentForm.reset(); 
-            showToast('Komentarz został zapisany!', 'success');
-        } catch (err) {
-            console.error(err);
-            showToast('Błąd podczas zapisywania!', 'error');
-        }
+    commentForm.reset(); 
+    showToast('Komentarz zapisany!', 'success');
+    } catch (err) {
+    console.error(err);
+    showToast('Błąd zapisu!', 'error');
+    }
     });
   }
 }
