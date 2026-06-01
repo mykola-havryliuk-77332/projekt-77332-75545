@@ -383,36 +383,25 @@ function setupBooksListeners() {
             const textValue = document.getElementById('comment-text').value;
             const authorName = currentUser ? currentUser.name : "Użytkownik";
 
-            const bookToUpdate = books.find(b => b.id == currentBookId);
-            
-            if (!bookToUpdate) {
-                showToast('Nie znaleziono książki!', 'error');
-                return;
-            }
-
-            if (!bookToUpdate.comments) {
-                bookToUpdate.comments = [];
-            }
-            
-            bookToUpdate.comments.push({
+            const commentData = {
                 rating: ratingValue,
                 text: textValue,
                 author: authorName
-            });
+            };
 
             try {
-                const response = await fetch(`${API_URL}/${currentBookId}`, {
-                    method: 'PUT',
+                const response = await fetch(`${API_URL}/${currentBookId}/comments`, {
+                    method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(bookToUpdate)
+                    body: JSON.stringify(commentData)
                 });
 
                 if (!response.ok) {
                     const errDetails = await response.text();
-                    console.error("Błąd serwera:", errDetails);
-                    throw new Error('Błąd serwera');
+                    console.error(errDetails);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const res = await fetch(API_URL);
