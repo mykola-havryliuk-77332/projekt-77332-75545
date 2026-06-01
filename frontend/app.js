@@ -378,22 +378,23 @@ function setupBooksListeners() {
         
         if (!currentBookId) return;
 
-        // Збираємо дані
+        // 1. Правильно визначаємо змінні всередині функції
         const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
         const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
         const textValue = document.getElementById('comment-text').value;
+        // Визначаємо автора, щоб не було ReferenceError
         const authorName = (typeof currentUser !== 'undefined' && currentUser.name) ? currentUser.name : "Użytkownik";
 
-        // Структура об'єкта, яку очікує ваш Java-код:
+        // 2. Формуємо об'єкт для відправки згідно з вимогами вашого Java-контролера
         const commentData = {
-            bookId: Number(currentBookId), // Важливо: передаємо ID книги, бо сервер це перевіряє
+            bookId: Number(currentBookId), // Потрібно для перевірки в Java-коді
             author: authorName,
             text: textValue,
             rating: ratingValue
         };
 
         try {
-            // Відправляємо POST запит на /api/comments
+            // 3. Виправляємо URL: прибираємо /books/ з середини
             const response = await fetch(`${API_URL}/comments`, {
                 method: 'POST',
                 headers: { 
@@ -405,15 +406,14 @@ function setupBooksListeners() {
 
             if (!response.ok) {
                 const errorData = await response.text();
-                console.error("Помилка від сервера:", errorData);
-                throw new Error("Не вдалося зберегти коментар");
+                throw new Error(errorData || "Помилка сервера");
             }
 
-            // Успіх: очищуємо форму та оновлюємо список
+            // 4. Успіх
             commentForm.reset(); 
-            showToast('Komentarz został zapisany!', 'success');
+            showToast('Komentarz zapisany!', 'success');
             
-            // Після додавання оновлюємо дані на сторінці
+            // Оновлюємо список
             const res = await fetch(`${API_URL}/books`);
             books = await res.json();
             renderBooks();
@@ -421,10 +421,10 @@ function setupBooksListeners() {
 
         } catch (err) {
             console.error(err);
-            showToast('Błąd zapisu!', 'error');
+            showToast('Błąd zapisu! Sprawdź konsolę (F12).', 'error');
         }
     });
-  }
+}
 }
 
 window.deleteBook = async function(id) {
