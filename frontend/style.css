@@ -1,3 +1,4 @@
+/* Zmienne CSS określające paletę kolorów i zaokrąglenia */
 :root {
     --primary-color: #3b82f6;
     --primary-hover: #2563eb;
@@ -11,24 +12,28 @@
     --radius: 12px;
 }
 
+/* Reset stylów przeglądarki dla wszystkich elementów */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* Domyślne style dla ciała strony (czcionka, tło, kolor tekstu) */
 body {
     font-family: 'Inter', sans-serif;
     background: var(--bg-color);
     color: var(--text-main);
 }
 
+/* Główny kontener wyśrodkowujący treść */
 .container {
     max-width: 1350px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
+/* Przyklejony nagłówek na górze strony (Menu) */
 .main-header {
     background: var(--card-bg);
     padding: 15px 0;
@@ -47,6 +52,7 @@ body {
     gap: 15px;
 }
 
+/* Wygląd logo i linku w nagłówku */
 .logo a {
     display: flex;
     align-items: center;
@@ -72,6 +78,7 @@ body {
     color: var(--primary-color);
 }
 
+/* Pasek wyszukiwania w nagłówku */
 .search-bar {
     flex-grow: 1;
     max-width: 400px;
@@ -81,6 +88,7 @@ body {
     width: 100%;
 }
 
+/* Kontener na przyciski autoryzacji (Zaloguj/Zarejestruj) */
 .auth-buttons {
     display: flex;
     gap: 10px;
@@ -97,6 +105,7 @@ body {
     cursor: pointer;
 }
 
+/* Główny układ strony (panel boczny + główna lista) */
 .main-content {
     display: grid;
     grid-template-columns: 280px 1fr;
@@ -106,12 +115,14 @@ body {
     align-items: start;
 }
 
+/* Responsywność dla mniejszych ekranów - zmiana na jedną kolumnę */
 @media (max-width: 850px) {
     .main-content {
         grid-template-columns: 1fr;
     }
 }
 
+/* Wygląd sekcji dodawania książek (dla admina) oraz listy książek */
 .add-book-section,
 .books-list-section {
     background: var(--card-bg);
@@ -120,6 +131,7 @@ body {
     border: 1px solid var(--border-color);
 }
 
+/* Przyklejenie formularza dodawania książki do ekranu podczas scrollowania */
 .add-book-section {
     position: sticky;
     top: 90px;
@@ -131,6 +143,7 @@ body {
     font-size: 1.3rem;
 }
 
+/* Style dla formularzy */
 .form-group {
     margin-bottom: 15px;
 }
@@ -147,6 +160,7 @@ label {
     font-size: 0.9rem;
 }
 
+/* Pola wejściowe i tekstowe (inputy) */
 input,
 textarea,
 select {
@@ -176,6 +190,7 @@ textarea {
     height: auto;
 }
 
+/* Standardowe przyciski */
 button {
     cursor: pointer;
     font-family: inherit;
@@ -208,6 +223,7 @@ button {
     background: var(--primary-hover);
 }
 
+/* Przyciski w obrysie */
 .btn-outline {
     background: transparent;
     color: var(--text-muted);
@@ -220,6 +236,7 @@ button {
     color: var(--text-main);
 }
 
+/* Przyciski akcji na kafelku (Edytuj, Usuń) */
 .btn-danger,
 .btn-edit {
     color: white;
@@ -235,16 +252,19 @@ button {
     background: var(--warning);
 }
 
+/* Klasa pomocnicza do całkowitego ukrywania elementów */
 .hidden {
     display: none !important;
 }
 
+/* Siatka dla katalogu książek */
 .books-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 20px;
 }
 
+/* Wygląd pojedynczej karty z książką */
 .book-card {
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
@@ -255,12 +275,14 @@ button {
     background: var(--card-bg);
 }
 
+/* Efekt unoszenia karty książki po najechaniu myszą (Hover) */
 .book-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
     border-color: var(--primary-color);
 }
 
+/* Okładka książki w karcie */
 .card-cover {
     height: 260px;
     background: var(--border-color);
@@ -275,6 +297,7 @@ button {
     cursor: pointer;
 }
 
+/* Plakietka z gatunkiem książki */
 .badge {
     display: inline-block;
     background: var(--bg-color);
@@ -298,6 +321,7 @@ button {
     font-size: 0.9rem;
 }
 
+/* Pasek na dole karty dla przycisków (np. w panelu admina) */
 .card-actions {
     display: flex;
     gap: 8px;
@@ -306,6 +330,7 @@ button {
     background: var(--bg-color);
 }
 
+/* Tło dla wyskakujących okien modalnych (przyciemnienie) */
 .modal {
     position: fixed;
     top: 0;
@@ -325,6 +350,7 @@ button {
     background: var(--bg-color);
 }
 
+/* Wewnętrzne style samego okna modalnego */
 .modal-content {
     background: var(--card-bg);
     padding: 30px;
@@ -334,6 +360,7 @@ button {
     overflow-y: auto;
 }
 
+/* Konfiguracja dla mniejszych i większych rozmiarów modali */
 .small-modal {
     width: 400px;
     max-width: 90%;
@@ -344,6 +371,7 @@ button {
     max-width: 95%;
 }
 
+/* Style dla okienka logowania / rejestracji */
 .auth-modal-content {
     width: 450px;
     max-width: 95%;
@@ -352,12 +380,14 @@ button {
     border: 1px solid var(--border-color);
 }
 
+/* Krzyżyk zamykający pełnoekranowy modal */
 .full-page-modal .close-btn {
     top: 20px;
     right: 25px;
     font-size: 2rem;
 }
 
+/* Nagłówek w formularzu autoryzacyjnym */
 .auth-header {
     text-align: center;
     margin-bottom: 30px;
@@ -383,6 +413,7 @@ button {
     margin-bottom: 8px;
 }
 
+/* Link między logowaniem a rejestracją na dole modalu */
 .auth-switch {
     text-align: center;
     margin-top: 20px;
@@ -402,6 +433,7 @@ button {
     text-decoration: underline;
 }
 
+/* Standardowy krzyżyk zamykający dla okienek (w prawym górnym rogu) */
 .close-btn {
     position: absolute;
     top: 15px;
@@ -412,18 +444,21 @@ button {
     z-index: 10;
 }
 
+/* Układ flexbox do rozmieszczenia elementów modalu w trybie poziomym */
 .modal-layout {
     display: flex;
     gap: 30px;
     margin-top: 10px;
 }
 
+/* Responsywność dla okienka modalnego - zawartość układa się pionowo */
 @media (max-width: 700px) {
     .modal-layout {
         flex-direction: column;
     }
 }
 
+/* Style okładki w dużym oknie ze szczegółami książki */
 .modal-cover-wrapper {
     flex: 1;
     max-width: 250px;
@@ -440,6 +475,7 @@ button {
     margin-top: 15px;
 }
 
+/* Sekcja informacyjna (tytuł, opis, komentarze) po prawej stronie */
 .modal-info {
     flex: 2;
 }
@@ -461,12 +497,14 @@ button {
     color: var(--text-main);
 }
 
+/* Kreska oddzielająca wizualnie sekcje */
 .divider {
     height: 1px;
     background: var(--border-color);
     margin: 25px 0;
 }
 
+/* Obszar komentarzy i ocen */
 .comments-section h3 {
     margin-bottom: 15px;
     font-size: 1.2rem;
@@ -479,6 +517,7 @@ button {
     padding-right: 5px;
 }
 
+/* Pojedynczy dymek komentarza */
 .comment {
     background: var(--bg-color);
     padding: 15px;
@@ -510,6 +549,7 @@ button {
     margin-top: 8px;
 }
 
+/* Informacja widoczna dla niezalogowanych chętnych do komentowania */
 .login-prompt {
     color: var(--text-muted);
     font-size: 0.9rem;
@@ -519,6 +559,7 @@ button {
     border-radius: 8px;
 }
 
+/* Wygląd tekstu w wypadku braku danych / pustych list */
 .empty-message {
     text-align: center;
     color: var(--text-muted);
@@ -526,6 +567,7 @@ button {
     grid-column: 1 / -1;
 }
 
+/* Customizacja rozwijanego menu (select) - np. dodanie własnej strzałki z SVG */
 select {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -538,6 +580,10 @@ select {
     cursor: pointer;
 }
 
+/* ---------------------------------------------------- */
+/* Ustawienia Dark Mode (Tryb Ciemny) */
+/* Nadpisywanie globalnych zmiennych koloru na mroczniejsze */
+/* ---------------------------------------------------- */
 body.dark-mode {
     --bg-color: #0f172a;
     --card-bg: #1e293b;
@@ -546,10 +592,12 @@ body.dark-mode {
     --border-color: #334155;
 }
 
+/* Globalne płynne przejścia tła podczas przełączania jasnego/ciemnego trybu */
 body, .book-card, .main-header, .modal-content, input, textarea, select, .card-actions, .card-cover, .comment, .add-book-section, .books-list-section {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
+/* Dynamiczna zmiana widoczności ikonek słońca i księżyca wg trybu */
 #theme-toggle .moon-icon { display: inline-block; }
 #theme-toggle .sun-icon { display: none; }
 
@@ -562,6 +610,9 @@ body.dark-mode #theme-toggle .sun-icon { display: inline-block; }
     vertical-align: middle;
 }
 
+/* ---------------------------------------------------- */
+/* System powiadomień błyskawicznych (Toasts) */
+/* ---------------------------------------------------- */
 #toast-container {
     position: fixed;
     bottom: 30px;
@@ -572,6 +623,7 @@ body.dark-mode #theme-toggle .sun-icon { display: inline-block; }
     gap: 15px;
 }
 
+/* Główny wygląd Toasta */
 .toast {
     min-width: 250px;
     padding: 15px 20px;
@@ -588,14 +640,17 @@ body.dark-mode #theme-toggle .sun-icon { display: inline-block; }
     align-items: center;
 }
 
+/* Typy powiadomień i kolory (Sukces, Błąd, Ostrzeżenie) */
 .toast.success { background-color: #10b981; }
 .toast.error { background-color: #ef4444; }
 .toast.warning { background-color: #f59e0b; }
 
+/* Aktywacja animacji zanikania Toasta */
 .toast.fade-out {
     animation: fadeOutRight 0.3s forwards;
 }
 
+/* Opcja manualnego zamknięcia powiadomienia na krzyżyk */
 .toast-close {
     cursor: pointer;
     font-weight: bold;
@@ -607,14 +662,19 @@ body.dark-mode #theme-toggle .sun-icon { display: inline-block; }
 
 .toast-close:hover { opacity: 1; }
 
+/* Animacja wjazdu powiadomienia po stronie prawej */
 @keyframes slideInRight {
     to { opacity: 1; transform: translateX(0); }
 }
 
+/* Animacja odjazdu powiadomienia w prawo */
 @keyframes fadeOutRight {
     to { opacity: 0; transform: translateX(100%); }
 }
 
+/* ---------------------------------------------------- */
+/* System oceny w gwiazdkach (Rating logic) */
+/* ---------------------------------------------------- */
 .star-rating {
     display: flex;
     flex-direction: row-reverse;
@@ -622,6 +682,7 @@ body.dark-mode #theme-toggle .sun-icon { display: inline-block; }
     gap: 5px;
 }
 
+/* Ukrycie standardowych 'kółek' inputów radio, zamiana na ikony */
 .star-rating input[type="radio"] {
     display: none !important;
 }
@@ -639,6 +700,7 @@ body.dark-mode #theme-toggle .sun-icon { display: inline-block; }
     display: block;
 }
 
+/* Kaskadowe wypełnianie gwiazdek kolorem żółtym (Hover/Zaznaczenie) */
 .star-rating label:hover,
 .star-rating label:hover ~ label,
 .star-rating input[type="radio"]:checked ~ label {
