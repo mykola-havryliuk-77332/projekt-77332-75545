@@ -1,11 +1,14 @@
+// Główne zmienne i adres API serwera
 const API_URL = 'https://projekt-77332-75545-production.up.railway.app/api/books';
 let books = [];
 let isAdmin = false;
 let currentUser = null; 
 let currentBookId = null;
 
+// Uruchomienie aplikacji po załadowaniu strony
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        // Ładowanie poszczególnych komponentów interfejsu (HTML)
         await loadComponent('header-placeholder', 'components/header.html');
         await loadComponent('admin-placeholder', 'components/admin-section.html');
         await loadComponent('catalog-placeholder', 'components/catalog-section.html');
@@ -16,12 +19,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// Funkcja pobierająca kod HTML z innych plików
 async function loadComponent(elementId, filepath) {
     const response = await fetch(filepath + '?v=' + new Date().getTime());
     const html = await response.text();
     document.getElementById(elementId).innerHTML = html;
 }
 
+// Inicjalizacja głównych funkcji i pobieranie książek z bazy
 async function initApp() {
     try {
         const response = await fetch(API_URL);
@@ -39,6 +44,7 @@ async function initApp() {
     setupThemeToggle();
 }
 
+// Wyświetlanie powiadomień na ekranie (np. "Zalogowano pomyślnie")
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -52,19 +58,25 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
+// Renderowanie listy książek w głównym katalogu
 function renderBooks(booksToRender = books) {
     const booksContainer = document.getElementById('books-container');
     if (!booksContainer) return;
     booksContainer.innerHTML = '';
+    
     if (booksToRender.length === 0) {
         booksContainer.innerHTML = '<p class="empty-message">Brak wyników do wyświetlenia.</p>';
         return;
     }
+    
+    // Tworzenie karty dla każdej książki w pętli
     booksToRender.forEach(book => {
         const card = document.createElement('div');
         card.className = 'book-card';
         const coverUrl = book.coverUrl ? book.coverUrl : 'img/book.png';
         let avgRating = "Brak ocen";
+        
+        // Obliczanie średniej oceny książki na podstawie komentarzy
         if(book.comments && book.comments.length > 0) {
             const sum = book.comments.reduce((acc, curr) => {
                 let r = curr.rating;
@@ -81,6 +93,7 @@ function renderBooks(booksToRender = books) {
             if (avg > 5) avg = 5;
             avgRating = avg > 0 ? "⭐".repeat(avg) : "Brak ocen";
         }
+        
         card.innerHTML = `
             <div class="card-cover" style="background-image: url('${coverUrl}')" onclick="openModal('${book.id}')"></div>
             <div class="card-content" onclick="openModal('${book.id}')">
@@ -98,6 +111,7 @@ function renderBooks(booksToRender = books) {
     });
 }
 
+// Czyszczenie formularza dodawania/edycji książki
 function resetForm() {
     document.getElementById('add-book-form').reset();
     document.getElementById('edit-book-id').value = '';
@@ -106,6 +120,7 @@ function resetForm() {
     document.getElementById('cancel-edit-btn').classList.add('hidden');
 }
 
+// Podpięcie zdarzeń kliknięcia dla okienek modalnych (zamykanie)
 function setupUIListeners() {
     document.getElementById('close-book-modal')?.addEventListener('click', () => {
         document.getElementById('book-modal')?.classList.add('hidden');
@@ -118,6 +133,7 @@ function setupUIListeners() {
     });
 }
 
+// Podgląd hasła (ikonka oka) w formularzach
 function setupPasswordToggles() {
     const toggleBtns = document.querySelectorAll('.pwd-toggle-btn');
     toggleBtns.forEach(btn => {
@@ -143,17 +159,21 @@ function setupPasswordToggles() {
     });
 }
 
+// Obsługa formularzy logowania i rejestracji
 function setupAuthForms() {
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const loginModal = document.getElementById('login-modal');
     const registerModal = document.getElementById('register-modal');
 
+    // Zamykanie modali autoryzacji
     document.getElementById('close-login-modal')?.addEventListener('click', () => loginModal.classList.add('hidden'));
     document.getElementById('close-register-modal')?.addEventListener('click', () => registerModal.classList.add('hidden'));
     document.getElementById('close-profile-modal')?.addEventListener('click', () => {
         document.getElementById('profile-modal').classList.add('hidden');
     });
+    
+    // Przełączanie między logowaniem a rejestracją
     document.getElementById('switch-to-register')?.addEventListener('click', () => {
         loginModal.classList.add('hidden');
         registerModal.classList.remove('hidden');
@@ -162,7 +182,8 @@ function setupAuthForms() {
         registerModal.classList.add('hidden');
         loginModal.classList.remove('hidden');
     });
-    
+
+    // Logowanie - wysyłanie zapytania do API
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -179,7 +200,7 @@ function setupAuthForms() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    isAdmin = (data.role === 'ADMIN');
+                    isAdmin = (data.role === 'ADMIN'); // Sprawdzenie czy użytkownik to admin
                     currentUser = { name: data.fullName || email.split('@')[0], email: email };
                     
                     showToast('Zalogowano pomyślnie!', 'success');
@@ -197,6 +218,7 @@ function setupAuthForms() {
         });
     }
 
+    // Rejestracja - wysyłanie zapytania do API
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -229,14 +251,17 @@ function setupAuthForms() {
     }
 }
 
+// Aktualizacja paska górnego po zalogowaniu (zmień przyciski logowania na profil/wyloguj)
 function updateAuthUI() {
     const authContainer = document.querySelector('.auth-buttons');
     if (!authContainer) return;
     const themeBtn = document.getElementById('theme-toggle');
     authContainer.innerHTML = '';
+    
     if (themeBtn) authContainer.appendChild(themeBtn);
     
     if (currentUser) {
+        // Interfejs dla zalogowanego użytkownika
         const authDiv = document.createElement('div');
         authDiv.style.display = 'flex';
         authDiv.style.alignItems = 'center';
@@ -266,6 +291,7 @@ function updateAuthUI() {
             }
         });
     } else {
+        // Interfejs dla niezalogowanego (gościa)
         const unauthDiv = document.createElement('div');
         unauthDiv.style.display = 'flex';
         unauthDiv.style.gap = '10px';
@@ -287,10 +313,12 @@ function updateAuthUI() {
     }
 }
 
+// Pokazywanie lub ukrywanie panelu administratora
 function toggleAdminMode() {
     const adminSection = document.getElementById('admin-section');
     if (adminSection) adminSection.style.display = isAdmin ? 'block' : 'none';
     
+    // Zablokuj komentowanie dla niezalogowanych
     const commentForm = document.getElementById('add-comment-form');
     const loginPrompt = document.getElementById('login-prompt-comments');
     if (commentForm && loginPrompt) {
@@ -303,16 +331,19 @@ function toggleAdminMode() {
         }
     }
     
+    // Dopasowanie szerokości siatki zależnie od praw usera
     const mainContent = document.querySelector('.main-content');
     if (mainContent) mainContent.style.gridTemplateColumns = isAdmin ? '280px 1fr' : '1fr';
     renderBooks();
 }
 
+// Podpięcie akcji związanych z listą książek (dodawanie, szukanie, komentowanie)
 function setupBooksListeners() {
     const bookForm = document.getElementById('add-book-form');
     const searchInput = document.getElementById('search-input');
     const commentForm = document.getElementById('add-comment-form');
-
+    
+    // Dodawanie lub edycja książki po stronie admina
     if (bookForm) {
         bookForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -327,6 +358,7 @@ function setupBooksListeners() {
             };
 
             if (id) {
+                // Tryb edycji książki
                 try {
                     await fetch(`${API_URL}/${id}`, {
                         method: 'PUT',
@@ -342,6 +374,7 @@ function setupBooksListeners() {
                     showToast('Błąd aktualizacji książki!', 'error');
                 }
             } else {
+                // Dodawanie nowej książki
                 try {
                     await fetch(API_URL, {
                         method: 'POST',
@@ -361,6 +394,7 @@ function setupBooksListeners() {
         });
     }
 
+    // Dynamiczna wyszukiwarka książek (filtruje listę na żywo)
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
@@ -372,62 +406,62 @@ function setupBooksListeners() {
         });
     }
 
+    // Wysyłanie nowego komentarza i oceny książki
     if (commentForm) {
-    commentForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        if (!currentBookId) return;
-
-        // 1. Правильно визначаємо змінні всередині функції
-        const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
-        const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
-        const textValue = document.getElementById('comment-text').value;
-        // Визначаємо автора, щоб не було ReferenceError
-        const authorName = (typeof currentUser !== 'undefined' && currentUser.name) ? currentUser.name : "Użytkownik";
-
-        // 2. Формуємо об'єкт для відправки згідно з вимогами вашого Java-контролера
-        const commentData = {
-            bookId: Number(currentBookId), // Потрібно для перевірки в Java-коді
-            author: authorName,
-            text: textValue,
-            rating: ratingValue
-        };
-
-        try {
-            // Замініть ваш fetch на цей (тут ми вручну вказуємо правильний шлях до API)
-        const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/comments', {
-        method: 'POST',
-        headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + localStorage.getItem('token')
-    },
-    body: JSON.stringify(commentData)
-}); 
-
-            if (!response.ok) {
-                const errorData = await response.text();
-                throw new Error(errorData || "Помилка сервера");
-            }
-
-            // 4. Успіх
-            commentForm.reset(); 
-            showToast('Komentarz zapisany!', 'success');
+        commentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-           
-            // Оновлюємо список книг, використовуючи правильний шлях до API
-            const res = await fetch('https://projekt-77332-75545-production.up.railway.app/api/books');
-            books = await res.json();
-            renderBooks();
-            renderComments(books.find(b => b.id == currentBookId)?.comments || []);
+            if (!currentBookId) return;
 
-        } catch (err) {
-            console.error(err);
-            showToast('Błąd zapisu!', 'error');
-        }
-    });
-}
+            // Prawidłowe określenie zmiennych wewnątrz funkcji
+            const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
+            const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
+            const textValue = document.getElementById('comment-text').value;
+            
+            // Określamy autora (unikanie ReferenceError)
+            const authorName = (typeof currentUser !== 'undefined' && currentUser.name) ? currentUser.name : "Użytkownik";
+
+            // Budowanie obiektu wg wymogów kontrolera Java (Backend)
+            const commentData = {
+                bookId: Number(currentBookId), 
+                author: authorName,
+                text: textValue,
+                rating: ratingValue
+            };
+
+            try {
+                // Zapytanie wysyłające komentarz do API
+                const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/comments', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(commentData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(errorData || "Błąd serwera");
+                }
+
+                // Sukces - czyszczenie formy i odświeżenie danych
+                commentForm.reset();
+                showToast('Komentarz zapisany!', 'success');
+                
+                const res = await fetch('https://projekt-77332-75545-production.up.railway.app/api/books');
+                books = await res.json();
+                renderBooks();
+                renderComments(books.find(b => b.id == currentBookId)?.comments || []);
+            } catch (err) {
+                console.error(err);
+                showToast('Błąd zapisu!', 'error');
+            }
+        });
+    }
 }
 
+// Funkcja usuwania książki (Dostępna z poziomu okna / window)
 window.deleteBook = async function(id) {
     if (confirm('Czy na pewno chcesz usunąć tę książkę z katalogu?')) {
         try {
@@ -445,6 +479,7 @@ window.deleteBook = async function(id) {
     }
 }
 
+// Otwieranie formularza w trybie edycji (uzupełnianie danych wybranej książki)
 window.editBook = function(id) {
     const book = books.find(b => b.id == id);
     if (book) {
@@ -457,10 +492,11 @@ window.editBook = function(id) {
         document.getElementById('form-title').textContent = 'Edytuj książkę';
         document.getElementById('submit-book-btn').textContent = 'Zapisz zmiany';
         document.getElementById('cancel-edit-btn').classList.remove('hidden');
-        window.scrollTo(0, 0);
+        window.scrollTo(0, 0); // Powrót na górę ekranu, gdzie jest formularz
     }
 }
 
+// Otwieranie okienka (modal) ze szczegółami wybranej książki
 window.openModal = function(id) {
     const book = books.find(b => b.id == id);
     if (book) {
@@ -476,12 +512,14 @@ window.openModal = function(id) {
     }
 }
 
+// Renderowanie listy komentarzy w oknie książki
 function renderComments(comments) {
     const list = document.getElementById('comments-list');
     if (!list || comments.length === 0) {
         if (list) list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Brak komentarzy. Bądź pierwszy!</p>';
         return;
     }
+    
     list.innerHTML = comments.map(c => {
         let stars = "";
         if (c.rating && !isNaN(c.rating)) stars = "⭐".repeat(Number(c.rating));
@@ -498,12 +536,15 @@ function renderComments(comments) {
     `}).join('');
 }
 
+// Zmiana motywu jasny / ciemny i zapis wyboru do LocalStorage
 function setupThemeToggle() {
     const themeBtn = document.getElementById('theme-toggle');
     if (!themeBtn) return;
+    
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-mode');
     }
+    
     themeBtn.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');
         if (document.body.classList.contains('dark-mode')) {
