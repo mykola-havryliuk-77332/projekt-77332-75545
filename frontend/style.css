@@ -267,6 +267,7 @@ button {
     background-size: cover;
     background-position: center;
     cursor: pointer;
+    position: relative;
 }
 
 .card-content {
@@ -643,4 +644,63 @@ body.dark-mode #theme-toggle .sun-icon { display: inline-block; }
 .star-rating label:hover ~ label,
 .star-rating input[type="radio"]:checked ~ label {
     color: var(--warning);
+}
+
+.fav-card-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.85);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    z-index: 10;
+    padding: 0;
+}
+
+.fav-card-btn:hover {
+    transform: scale(1.1);
+    background: #ffffff;
+}
+
+.fav-card-btn .heart-svg {
+    width: 18px;
+    height: 18px;
+    fill: #94a3b8;
+    transition: fill 0.2s ease, transform 0.2s ease;
+}
+
+.fav-card-btn:hover .heart-svg {
+    fill: #64748b;
+}
+
+.fav-card-btn.active .heart-svg {
+    fill: #ef4444 !important;
+}
+
+body.dark-mode .fav-card-btn {
+    background: rgba(30, 41, 59, 0.85);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+body.dark-mode .fav-card-btn:hover {
+    background: #1e293b;
+}
+body.dark-mode .fav-card-btn:not(.active) .heart-svg {
+    fill: #64748b;
+}
+
+.active-fav-filter {
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+}
+.active-fav-filter:hover {
+    background: rgba(239, 68, 68, 0.15) !important;
 }
