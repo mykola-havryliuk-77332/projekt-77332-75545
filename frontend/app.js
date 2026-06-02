@@ -3,6 +3,7 @@ let books = [];
 let isAdmin = false;
 let currentUser = null; 
 let currentBookId = null;
+let showFavoritesOnly = false; 
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -37,6 +38,7 @@ async function initApp() {
     updateAuthUI(); 
     toggleAdminMode();
     setupThemeToggle();
+    setupFavoritesListener();
 }
 
 function showToast(message, type = 'success') {
@@ -56,15 +58,20 @@ function renderBooks(booksToRender = books) {
     const booksContainer = document.getElementById('books-container');
     if (!booksContainer) return;
     booksContainer.innerHTML = '';
+    
     if (booksToRender.length === 0) {
         booksContainer.innerHTML = '<p class="empty-message">Brak wyników do wyświetlenia.</p>';
         return;
     }
+
+    const favs = getFavorites().map(String);
+
     booksToRender.forEach(book => {
         const card = document.createElement('div');
         card.className = 'book-card';
         const coverUrl = book.coverUrl ? book.coverUrl : 'img/book.png';
         let avgRating = "Brak ocen";
+        
         if(book.comments && book.comments.length > 0) {
             const sum = book.comments.reduce((acc, curr) => {
                 let r = curr.rating;
@@ -81,8 +88,17 @@ function renderBooks(booksToRender = books) {
             if (avg > 5) avg = 5;
             avgRating = avg > 0 ? "⭐".repeat(avg) : "Brak ocen";
         }
+
+        const isFav = favs.includes(String(book.id));
+
         card.innerHTML = `
-            <div class="card-cover" style="background-image: url('${coverUrl}')" onclick="openModal('${book.id}')"></div>
+            <div class="card-cover" style="background-image: url('${coverUrl}')" onclick="openModal('${book.id}')">
+                <button class="fav-card-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${book.id}')" title="Dodaj do ulubionych">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="heart-svg">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+            </div>
             <div class="card-content" onclick="openModal('${book.id}')">
                 <span class="badge">${book.genre || 'Książka'}</span>
                 <h3>${book.title}</h3>
@@ -90,8 +106,8 @@ function renderBooks(booksToRender = books) {
                 <p style="font-size: 0.8rem; margin-top: 8px;">${avgRating}</p>
             </div>
             <div class="card-actions" style="display: ${isAdmin ? 'flex' : 'none'}">
-                <button class="btn-edit" onclick="editBook('${book.id}')">Edytuj</button>
-                <button class="btn-danger" onclick="deleteBook('${book.id}')">Usuń</button>
+                <button class="btn-edit" onclick="event.stopPropagation(); editBook('${book.id}')">Edytuj</button>
+                <button class="btn-danger" onclick="event.stopPropagation(); deleteBook('${book.id}')">Usuń</button>
             </div>
         `;
         booksContainer.appendChild(card);
@@ -162,7 +178,7 @@ function setupAuthForms() {
         registerModal.classList.add('hidden');
         loginModal.classList.remove('hidden');
     });
-    
+
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -255,7 +271,6 @@ function updateAuthUI() {
             toggleAdminMode();
             showToast('Wylogowano pomyślnie.', 'warning');
         });
-        
         document.getElementById('dynamic-btn-profile').addEventListener('click', () => {
             const profileModal = document.getElementById('profile-modal');
             if (profileModal) {
@@ -279,7 +294,6 @@ function updateAuthUI() {
             const loginModal = document.getElementById('login-modal');
             if (loginModal) loginModal.classList.remove('hidden');
         });
-        
         document.getElementById('dynamic-btn-register').addEventListener('click', () => {
             const regModal = document.getElementById('register-modal');
             if (regModal) regModal.classList.remove('hidden');
@@ -290,9 +304,9 @@ function updateAuthUI() {
 function toggleAdminMode() {
     const adminSection = document.getElementById('admin-section');
     if (adminSection) adminSection.style.display = isAdmin ? 'block' : 'none';
-    
     const commentForm = document.getElementById('add-comment-form');
     const loginPrompt = document.getElementById('login-prompt-comments');
+    
     if (commentForm && loginPrompt) {
         if (currentUser) {
             commentForm.classList.remove('hidden');
@@ -335,7 +349,7 @@ function setupBooksListeners() {
                     });
                     const res = await fetch(API_URL);
                     books = await res.json();
-                    renderBooks();
+                    filterAndRenderBooks();
                     showToast('Zaktualizowano informacje o książce.', 'success');
                 } catch (err) {
                     console.error(err);
@@ -350,7 +364,7 @@ function setupBooksListeners() {
                     });
                     const res = await fetch(API_URL);
                     books = await res.json();
-                    renderBooks();
+                    filterAndRenderBooks();
                     showToast('Książka została pomyślnie dodana!', 'success');
                 } catch (err) {
                     console.error(err);
@@ -362,70 +376,57 @@ function setupBooksListeners() {
     }
 
     if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = books.filter(b => 
-                b.title.toLowerCase().includes(term) || 
-                b.author.toLowerCase().includes(term)
-            );
-            renderBooks(filtered);
+        searchInput.addEventListener('input', () => {
+            filterAndRenderBooks();
         });
     }
 
     if (commentForm) {
-    commentForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        if (!currentBookId) return;
-
-        // 1. Правильно визначаємо змінні всередині функції
-        const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
-        const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
-        const textValue = document.getElementById('comment-text').value;
-        // Визначаємо автора, щоб не було ReferenceError
-        const authorName = (typeof currentUser !== 'undefined' && currentUser.name) ? currentUser.name : "Użytkownik";
-
-        // 2. Формуємо об'єкт для відправки згідно з вимогами вашого Java-контролера
-        const commentData = {
-            bookId: Number(currentBookId), // Потрібно для перевірки в Java-коді
-            author: authorName,
-            text: textValue,
-            rating: ratingValue
-        };
-
-        try {
-            // Замініть ваш fetch на цей (тут ми вручну вказуємо правильний шлях до API)
-        const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/comments', {
-        method: 'POST',
-        headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + localStorage.getItem('token')
-    },
-    body: JSON.stringify(commentData)
-}); 
-
-            if (!response.ok) {
-                const errorData = await response.text();
-                throw new Error(errorData || "Помилка сервера");
-            }
-
-            // 4. Успіх
-            commentForm.reset(); 
-            showToast('Komentarz zapisany!', 'success');
+        commentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-           
-            // Оновлюємо список книг, використовуючи правильний шлях до API
-            const res = await fetch('https://projekt-77332-75545-production.up.railway.app/api/books');
-            books = await res.json();
-            renderBooks();
-            renderComments(books.find(b => b.id == currentBookId)?.comments || []);
+            if (!currentBookId) return;
 
-        } catch (err) {
-            console.error(err);
-            showToast('Błąd zapisu!', 'error');
-        }
-    });
-}
+            const ratingInput = commentForm.querySelector('input[name="rating"]:checked');
+            const ratingValue = ratingInput ? Number(ratingInput.value) : 0;
+            const textValue = document.getElementById('comment-text').value;
+            const authorName = (typeof currentUser !== 'undefined' && currentUser && currentUser.name) ? currentUser.name : "Użytkownik";
+
+            const commentData = {
+                bookId: Number(currentBookId), 
+                author: authorName,
+                text: textValue,
+                rating: ratingValue
+            };
+
+            try {
+                const response = await fetch('https://projekt-77332-75545-production.up.railway.app/api/comments', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(commentData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(errorData || "Помилка сервера");
+                }
+
+                commentForm.reset();
+                showToast('Komentarz zapisany!', 'success');
+                
+                const res = await fetch('https://projekt-77332-75545-production.up.railway.app/api/books');
+                books = await res.json();
+                filterAndRenderBooks();
+                renderComments(books.find(b => b.id == currentBookId)?.comments || []);
+            } catch (err) {
+                console.error(err);
+                showToast('Błąd zapisu!', 'error');
+            }
+        });
+    }
 }
 
 window.deleteBook = async function(id) {
@@ -436,7 +437,7 @@ window.deleteBook = async function(id) {
             });
             const res = await fetch(API_URL);
             books = await res.json();
-            renderBooks();
+            filterAndRenderBooks();
             showToast('Książka usunięta z katalogu.', 'warning');
         } catch (err) {
             console.error(err);
@@ -512,4 +513,59 @@ function setupThemeToggle() {
             localStorage.setItem('theme', 'light');
         }
     });
+}
+
+function getFavorites() {
+    try {
+        return JSON.parse(localStorage.getItem('favorite_books')) || [];
+    } catch (e) {
+        return [];
+    }
+}
+
+window.toggleFavorite = function(id) {
+    let favs = getFavorites().map(String);
+    const stringId = String(id);
+    
+    if (favs.includes(stringId)) {
+        favs = favs.filter(favId => favId !== stringId);
+        showToast('Usunięto z ulubionych', 'warning');
+    } else {
+        favs.push(stringId);
+        showToast('Dodano do ulubionych!', 'success');
+    }
+    
+    localStorage.setItem('favorite_books', JSON.stringify(favs));
+    filterAndRenderBooks(); 
+}
+
+function filterAndRenderBooks() {
+    const searchInput = document.getElementById('search-input');
+    const term = searchInput ? searchInput.value.toLowerCase() : '';
+    const favs = getFavorites().map(String);
+    
+    const filtered = books.filter(book => {
+        const matchesSearch = book.title.toLowerCase().includes(term) || book.author.toLowerCase().includes(term);
+        const matchesFav = !showFavoritesOnly || favs.includes(String(book.id));
+        return matchesSearch && matchesFav;
+    });
+    
+    renderBooks(filtered);
+}
+
+function setupFavoritesListener() {
+    const toggleBtn = document.getElementById('toggle-fav-btn');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            showFavoritesOnly = !showFavoritesOnly;
+            if (showFavoritesOnly) {
+                toggleBtn.classList.add('active-fav-filter');
+                toggleBtn.innerHTML = '<span class="heart-toggle-icon">❤️</span> Wszystkie książki';
+            } else {
+                toggleBtn.classList.remove('active-fav-filter');
+                toggleBtn.innerHTML = '<span class="heart-toggle-icon">🤍</span> Moje ulubione';
+            }
+            filterAndRenderBooks();
+        });
+    }
 }
