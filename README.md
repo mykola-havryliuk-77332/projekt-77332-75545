@@ -9,14 +9,17 @@ Aplikacja umożliwia przeglądanie bazy książek, rejestrację i logowanie uży
 * **Frontend Developer:** Mykola Havryliuk (Numer albumu: 77332)
 * **Backend Developer:** Mykola Vynnichyk (Numer albumu: 75545)
 
-## 🔐 Dostęp administratora
-Aby zaprezentować możliwość dodawania książek do katalogu, w aplikacji przygotowano dostęp do panelu administratora. Po zalogowaniu na konto administratora użytkownik może dodawać nowe książki, uzupełniając tytuł, autora, gatunek, link do okładki oraz opis.
+## Dostęp administratora
 
-Dane logowania do konta administratora:
-Email: admin@test.com
-Hasło: admin123
+W celu przetestowania dodawania książek przygotowano konto administratora:
 
-Mamy świadomość, że takie rozwiązanie nie jest w pełni bezpieczne i w rzeczywistej aplikacji dostęp administratora powinien być lepiej zabezpieczony. W tym projekcie zastosowano je wyłącznie w celu demonstracji działania funkcji dodawania książek.
+**Email:** admin@test.com  
+**Hasło:** admin123
+
+Po zalogowaniu na to konto pojawia się panel administratora, w którym można dodać nową książkę do katalogu.
+
+To rozwiązanie zostało użyte wyłącznie do celów demonstracyjnych.
+
 ---
 
 ## 🎨 Moduł Frontend (Mykola Havryliuk - 77332)
