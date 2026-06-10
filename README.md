@@ -9,7 +9,7 @@ Aplikacja umożliwia przeglądanie bazy książek, rejestrację i logowanie uży
 * **Frontend Developer:** Mykola Havryliuk (Numer albumu: 77332)
 * **Backend Developer:** Mykola Vynnichyk (Numer albumu: 75545)
 
-## Dostęp administratora
+## 🔐 Dostęp administratora
 
 W celu przetestowania dodawania książek przygotowano konto administratora:
 
